@@ -1,0 +1,5 @@
+package com.CoursDAppuiLesMeilleurs.mobile
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()
