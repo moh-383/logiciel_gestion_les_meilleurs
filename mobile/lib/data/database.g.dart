@@ -17,6 +17,18 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _matriculeMeta = const VerificationMeta(
+    'matricule',
+  );
+  @override
+  late final GeneratedColumn<String> matricule = GeneratedColumn<String>(
+    'matricule',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _nomMeta = const VerificationMeta('nom');
   @override
   late final GeneratedColumn<String> nom = GeneratedColumn<String>(
@@ -54,7 +66,14 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, nom, prenom, classe, siteId];
+  List<GeneratedColumn> get $columns => [
+    id,
+    matricule,
+    nom,
+    prenom,
+    classe,
+    siteId,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -71,6 +90,12 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('matricule')) {
+      context.handle(
+        _matriculeMeta,
+        matricule.isAcceptableOrUnknown(data['matricule']!, _matriculeMeta),
+      );
     }
     if (data.containsKey('nom')) {
       context.handle(
@@ -117,6 +142,10 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
+      matricule: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}matricule'],
+      )!,
       nom: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}nom'],
@@ -144,12 +173,14 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
 
 class Eleve extends DataClass implements Insertable<Eleve> {
   final String id;
+  final String matricule;
   final String nom;
   final String prenom;
   final String classe;
   final String siteId;
   const Eleve({
     required this.id,
+    required this.matricule,
     required this.nom,
     required this.prenom,
     required this.classe,
@@ -159,6 +190,7 @@ class Eleve extends DataClass implements Insertable<Eleve> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    map['matricule'] = Variable<String>(matricule);
     map['nom'] = Variable<String>(nom);
     map['prenom'] = Variable<String>(prenom);
     map['classe'] = Variable<String>(classe);
@@ -169,6 +201,7 @@ class Eleve extends DataClass implements Insertable<Eleve> {
   ElevesCompanion toCompanion(bool nullToAbsent) {
     return ElevesCompanion(
       id: Value(id),
+      matricule: Value(matricule),
       nom: Value(nom),
       prenom: Value(prenom),
       classe: Value(classe),
@@ -183,6 +216,7 @@ class Eleve extends DataClass implements Insertable<Eleve> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Eleve(
       id: serializer.fromJson<String>(json['id']),
+      matricule: serializer.fromJson<String>(json['matricule']),
       nom: serializer.fromJson<String>(json['nom']),
       prenom: serializer.fromJson<String>(json['prenom']),
       classe: serializer.fromJson<String>(json['classe']),
@@ -194,6 +228,7 @@ class Eleve extends DataClass implements Insertable<Eleve> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'matricule': serializer.toJson<String>(matricule),
       'nom': serializer.toJson<String>(nom),
       'prenom': serializer.toJson<String>(prenom),
       'classe': serializer.toJson<String>(classe),
@@ -203,12 +238,14 @@ class Eleve extends DataClass implements Insertable<Eleve> {
 
   Eleve copyWith({
     String? id,
+    String? matricule,
     String? nom,
     String? prenom,
     String? classe,
     String? siteId,
   }) => Eleve(
     id: id ?? this.id,
+    matricule: matricule ?? this.matricule,
     nom: nom ?? this.nom,
     prenom: prenom ?? this.prenom,
     classe: classe ?? this.classe,
@@ -217,6 +254,7 @@ class Eleve extends DataClass implements Insertable<Eleve> {
   Eleve copyWithCompanion(ElevesCompanion data) {
     return Eleve(
       id: data.id.present ? data.id.value : this.id,
+      matricule: data.matricule.present ? data.matricule.value : this.matricule,
       nom: data.nom.present ? data.nom.value : this.nom,
       prenom: data.prenom.present ? data.prenom.value : this.prenom,
       classe: data.classe.present ? data.classe.value : this.classe,
@@ -228,6 +266,7 @@ class Eleve extends DataClass implements Insertable<Eleve> {
   String toString() {
     return (StringBuffer('Eleve(')
           ..write('id: $id, ')
+          ..write('matricule: $matricule, ')
           ..write('nom: $nom, ')
           ..write('prenom: $prenom, ')
           ..write('classe: $classe, ')
@@ -237,12 +276,13 @@ class Eleve extends DataClass implements Insertable<Eleve> {
   }
 
   @override
-  int get hashCode => Object.hash(id, nom, prenom, classe, siteId);
+  int get hashCode => Object.hash(id, matricule, nom, prenom, classe, siteId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Eleve &&
           other.id == this.id &&
+          other.matricule == this.matricule &&
           other.nom == this.nom &&
           other.prenom == this.prenom &&
           other.classe == this.classe &&
@@ -251,6 +291,7 @@ class Eleve extends DataClass implements Insertable<Eleve> {
 
 class ElevesCompanion extends UpdateCompanion<Eleve> {
   final Value<String> id;
+  final Value<String> matricule;
   final Value<String> nom;
   final Value<String> prenom;
   final Value<String> classe;
@@ -258,6 +299,7 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
   final Value<int> rowid;
   const ElevesCompanion({
     this.id = const Value.absent(),
+    this.matricule = const Value.absent(),
     this.nom = const Value.absent(),
     this.prenom = const Value.absent(),
     this.classe = const Value.absent(),
@@ -266,6 +308,7 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
   });
   ElevesCompanion.insert({
     required String id,
+    this.matricule = const Value.absent(),
     required String nom,
     required String prenom,
     required String classe,
@@ -278,6 +321,7 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
        siteId = Value(siteId);
   static Insertable<Eleve> custom({
     Expression<String>? id,
+    Expression<String>? matricule,
     Expression<String>? nom,
     Expression<String>? prenom,
     Expression<String>? classe,
@@ -286,6 +330,7 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (matricule != null) 'matricule': matricule,
       if (nom != null) 'nom': nom,
       if (prenom != null) 'prenom': prenom,
       if (classe != null) 'classe': classe,
@@ -296,6 +341,7 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
 
   ElevesCompanion copyWith({
     Value<String>? id,
+    Value<String>? matricule,
     Value<String>? nom,
     Value<String>? prenom,
     Value<String>? classe,
@@ -304,6 +350,7 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
   }) {
     return ElevesCompanion(
       id: id ?? this.id,
+      matricule: matricule ?? this.matricule,
       nom: nom ?? this.nom,
       prenom: prenom ?? this.prenom,
       classe: classe ?? this.classe,
@@ -317,6 +364,9 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (matricule.present) {
+      map['matricule'] = Variable<String>(matricule.value);
     }
     if (nom.present) {
       map['nom'] = Variable<String>(nom.value);
@@ -340,6 +390,7 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
   String toString() {
     return (StringBuffer('ElevesCompanion(')
           ..write('id: $id, ')
+          ..write('matricule: $matricule, ')
           ..write('nom: $nom, ')
           ..write('prenom: $prenom, ')
           ..write('classe: $classe, ')
@@ -794,6 +845,16 @@ class $PaiementsTable extends Paiements
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _statutMeta = const VerificationMeta('statut');
+  @override
+  late final GeneratedColumn<String> statut = GeneratedColumn<String>(
+    'statut',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('valide'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -803,6 +864,7 @@ class $PaiementsTable extends Paiements
     modePaiement,
     note,
     dateLocale,
+    statut,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -868,6 +930,12 @@ class $PaiementsTable extends Paiements
     } else if (isInserting) {
       context.missing(_dateLocaleMeta);
     }
+    if (data.containsKey('statut')) {
+      context.handle(
+        _statutMeta,
+        statut.isAcceptableOrUnknown(data['statut']!, _statutMeta),
+      );
+    }
     return context;
   }
 
@@ -905,6 +973,10 @@ class $PaiementsTable extends Paiements
         DriftSqlType.dateTime,
         data['${effectivePrefix}date_locale'],
       )!,
+      statut: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}statut'],
+      )!,
     );
   }
 
@@ -922,6 +994,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
   final String modePaiement;
   final String? note;
   final DateTime dateLocale;
+  final String statut;
   const Paiement({
     this.id,
     required this.clientUuid,
@@ -930,6 +1003,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
     required this.modePaiement,
     this.note,
     required this.dateLocale,
+    required this.statut,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -945,6 +1019,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       map['note'] = Variable<String>(note);
     }
     map['date_locale'] = Variable<DateTime>(dateLocale);
+    map['statut'] = Variable<String>(statut);
     return map;
   }
 
@@ -957,6 +1032,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       modePaiement: Value(modePaiement),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       dateLocale: Value(dateLocale),
+      statut: Value(statut),
     );
   }
 
@@ -973,6 +1049,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       modePaiement: serializer.fromJson<String>(json['modePaiement']),
       note: serializer.fromJson<String?>(json['note']),
       dateLocale: serializer.fromJson<DateTime>(json['dateLocale']),
+      statut: serializer.fromJson<String>(json['statut']),
     );
   }
   @override
@@ -986,6 +1063,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       'modePaiement': serializer.toJson<String>(modePaiement),
       'note': serializer.toJson<String?>(note),
       'dateLocale': serializer.toJson<DateTime>(dateLocale),
+      'statut': serializer.toJson<String>(statut),
     };
   }
 
@@ -997,6 +1075,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
     String? modePaiement,
     Value<String?> note = const Value.absent(),
     DateTime? dateLocale,
+    String? statut,
   }) => Paiement(
     id: id.present ? id.value : this.id,
     clientUuid: clientUuid ?? this.clientUuid,
@@ -1005,6 +1084,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
     modePaiement: modePaiement ?? this.modePaiement,
     note: note.present ? note.value : this.note,
     dateLocale: dateLocale ?? this.dateLocale,
+    statut: statut ?? this.statut,
   );
   Paiement copyWithCompanion(PaiementsCompanion data) {
     return Paiement(
@@ -1023,6 +1103,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       dateLocale: data.dateLocale.present
           ? data.dateLocale.value
           : this.dateLocale,
+      statut: data.statut.present ? data.statut.value : this.statut,
     );
   }
 
@@ -1035,7 +1116,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
           ..write('montant: $montant, ')
           ..write('modePaiement: $modePaiement, ')
           ..write('note: $note, ')
-          ..write('dateLocale: $dateLocale')
+          ..write('dateLocale: $dateLocale, ')
+          ..write('statut: $statut')
           ..write(')'))
         .toString();
   }
@@ -1049,6 +1131,7 @@ class Paiement extends DataClass implements Insertable<Paiement> {
     modePaiement,
     note,
     dateLocale,
+    statut,
   );
 
   get syncStatus => null;
@@ -1062,7 +1145,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
           other.montant == this.montant &&
           other.modePaiement == this.modePaiement &&
           other.note == this.note &&
-          other.dateLocale == this.dateLocale);
+          other.dateLocale == this.dateLocale &&
+          other.statut == this.statut);
 }
 
 class PaiementsCompanion extends UpdateCompanion<Paiement> {
@@ -1073,6 +1157,7 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
   final Value<String> modePaiement;
   final Value<String?> note;
   final Value<DateTime> dateLocale;
+  final Value<String> statut;
   final Value<int> rowid;
   const PaiementsCompanion({
     this.id = const Value.absent(),
@@ -1082,6 +1167,7 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     this.modePaiement = const Value.absent(),
     this.note = const Value.absent(),
     this.dateLocale = const Value.absent(),
+    this.statut = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PaiementsCompanion.insert({
@@ -1092,6 +1178,7 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     required String modePaiement,
     this.note = const Value.absent(),
     required DateTime dateLocale,
+    this.statut = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientUuid = Value(clientUuid),
        echeanceId = Value(echeanceId),
@@ -1106,6 +1193,7 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     Expression<String>? modePaiement,
     Expression<String>? note,
     Expression<DateTime>? dateLocale,
+    Expression<String>? statut,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1116,6 +1204,7 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
       if (modePaiement != null) 'mode_paiement': modePaiement,
       if (note != null) 'note': note,
       if (dateLocale != null) 'date_locale': dateLocale,
+      if (statut != null) 'statut': statut,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1128,6 +1217,7 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     Value<String>? modePaiement,
     Value<String?>? note,
     Value<DateTime>? dateLocale,
+    Value<String>? statut,
     Value<int>? rowid,
   }) {
     return PaiementsCompanion(
@@ -1138,6 +1228,7 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
       modePaiement: modePaiement ?? this.modePaiement,
       note: note ?? this.note,
       dateLocale: dateLocale ?? this.dateLocale,
+      statut: statut ?? this.statut,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1166,6 +1257,9 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     if (dateLocale.present) {
       map['date_locale'] = Variable<DateTime>(dateLocale.value);
     }
+    if (statut.present) {
+      map['statut'] = Variable<String>(statut.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1182,6 +1276,481 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
           ..write('modePaiement: $modePaiement, ')
           ..write('note: $note, ')
           ..write('dateLocale: $dateLocale, ')
+          ..write('statut: $statut, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DemandesValidationTable extends DemandesValidation
+    with TableInfo<$DemandesValidationTable, DemandeValidation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DemandesValidationTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _clientUuidMeta = const VerificationMeta(
+    'clientUuid',
+  );
+  @override
+  late final GeneratedColumn<String> clientUuid = GeneratedColumn<String>(
+    'client_uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeActionMeta = const VerificationMeta(
+    'typeAction',
+  );
+  @override
+  late final GeneratedColumn<String> typeAction = GeneratedColumn<String>(
+    'type_action',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('annulation_paiement'),
+  );
+  static const VerificationMeta _paiementClientUuidMeta =
+      const VerificationMeta('paiementClientUuid');
+  @override
+  late final GeneratedColumn<String> paiementClientUuid =
+      GeneratedColumn<String>(
+        'paiement_client_uuid',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _motifMeta = const VerificationMeta('motif');
+  @override
+  late final GeneratedColumn<String> motif = GeneratedColumn<String>(
+    'motif',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statutMeta = const VerificationMeta('statut');
+  @override
+  late final GeneratedColumn<String> statut = GeneratedColumn<String>(
+    'statut',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en_attente'),
+  );
+  static const VerificationMeta _dateDemandeMeta = const VerificationMeta(
+    'dateDemande',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dateDemande = GeneratedColumn<DateTime>(
+    'date_demande',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    clientUuid,
+    typeAction,
+    paiementClientUuid,
+    motif,
+    statut,
+    dateDemande,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'demandes_validation';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DemandeValidation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('client_uuid')) {
+      context.handle(
+        _clientUuidMeta,
+        clientUuid.isAcceptableOrUnknown(data['client_uuid']!, _clientUuidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientUuidMeta);
+    }
+    if (data.containsKey('type_action')) {
+      context.handle(
+        _typeActionMeta,
+        typeAction.isAcceptableOrUnknown(data['type_action']!, _typeActionMeta),
+      );
+    }
+    if (data.containsKey('paiement_client_uuid')) {
+      context.handle(
+        _paiementClientUuidMeta,
+        paiementClientUuid.isAcceptableOrUnknown(
+          data['paiement_client_uuid']!,
+          _paiementClientUuidMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_paiementClientUuidMeta);
+    }
+    if (data.containsKey('motif')) {
+      context.handle(
+        _motifMeta,
+        motif.isAcceptableOrUnknown(data['motif']!, _motifMeta),
+      );
+    }
+    if (data.containsKey('statut')) {
+      context.handle(
+        _statutMeta,
+        statut.isAcceptableOrUnknown(data['statut']!, _statutMeta),
+      );
+    }
+    if (data.containsKey('date_demande')) {
+      context.handle(
+        _dateDemandeMeta,
+        dateDemande.isAcceptableOrUnknown(
+          data['date_demande']!,
+          _dateDemandeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dateDemandeMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientUuid};
+  @override
+  DemandeValidation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DemandeValidation(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      ),
+      clientUuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_uuid'],
+      )!,
+      typeAction: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type_action'],
+      )!,
+      paiementClientUuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}paiement_client_uuid'],
+      )!,
+      motif: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}motif'],
+      ),
+      statut: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}statut'],
+      )!,
+      dateDemande: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_demande'],
+      )!,
+    );
+  }
+
+  @override
+  $DemandesValidationTable createAlias(String alias) {
+    return $DemandesValidationTable(attachedDatabase, alias);
+  }
+}
+
+class DemandeValidation extends DataClass
+    implements Insertable<DemandeValidation> {
+  final String? id;
+  final String clientUuid;
+  final String typeAction;
+  final String paiementClientUuid;
+  final String? motif;
+  final String statut;
+  final DateTime dateDemande;
+  const DemandeValidation({
+    this.id,
+    required this.clientUuid,
+    required this.typeAction,
+    required this.paiementClientUuid,
+    this.motif,
+    required this.statut,
+    required this.dateDemande,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<String>(id);
+    }
+    map['client_uuid'] = Variable<String>(clientUuid);
+    map['type_action'] = Variable<String>(typeAction);
+    map['paiement_client_uuid'] = Variable<String>(paiementClientUuid);
+    if (!nullToAbsent || motif != null) {
+      map['motif'] = Variable<String>(motif);
+    }
+    map['statut'] = Variable<String>(statut);
+    map['date_demande'] = Variable<DateTime>(dateDemande);
+    return map;
+  }
+
+  DemandesValidationCompanion toCompanion(bool nullToAbsent) {
+    return DemandesValidationCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      clientUuid: Value(clientUuid),
+      typeAction: Value(typeAction),
+      paiementClientUuid: Value(paiementClientUuid),
+      motif: motif == null && nullToAbsent
+          ? const Value.absent()
+          : Value(motif),
+      statut: Value(statut),
+      dateDemande: Value(dateDemande),
+    );
+  }
+
+  factory DemandeValidation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DemandeValidation(
+      id: serializer.fromJson<String?>(json['id']),
+      clientUuid: serializer.fromJson<String>(json['clientUuid']),
+      typeAction: serializer.fromJson<String>(json['typeAction']),
+      paiementClientUuid: serializer.fromJson<String>(
+        json['paiementClientUuid'],
+      ),
+      motif: serializer.fromJson<String?>(json['motif']),
+      statut: serializer.fromJson<String>(json['statut']),
+      dateDemande: serializer.fromJson<DateTime>(json['dateDemande']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String?>(id),
+      'clientUuid': serializer.toJson<String>(clientUuid),
+      'typeAction': serializer.toJson<String>(typeAction),
+      'paiementClientUuid': serializer.toJson<String>(paiementClientUuid),
+      'motif': serializer.toJson<String?>(motif),
+      'statut': serializer.toJson<String>(statut),
+      'dateDemande': serializer.toJson<DateTime>(dateDemande),
+    };
+  }
+
+  DemandeValidation copyWith({
+    Value<String?> id = const Value.absent(),
+    String? clientUuid,
+    String? typeAction,
+    String? paiementClientUuid,
+    Value<String?> motif = const Value.absent(),
+    String? statut,
+    DateTime? dateDemande,
+  }) => DemandeValidation(
+    id: id.present ? id.value : this.id,
+    clientUuid: clientUuid ?? this.clientUuid,
+    typeAction: typeAction ?? this.typeAction,
+    paiementClientUuid: paiementClientUuid ?? this.paiementClientUuid,
+    motif: motif.present ? motif.value : this.motif,
+    statut: statut ?? this.statut,
+    dateDemande: dateDemande ?? this.dateDemande,
+  );
+  DemandeValidation copyWithCompanion(DemandesValidationCompanion data) {
+    return DemandeValidation(
+      id: data.id.present ? data.id.value : this.id,
+      clientUuid: data.clientUuid.present
+          ? data.clientUuid.value
+          : this.clientUuid,
+      typeAction: data.typeAction.present
+          ? data.typeAction.value
+          : this.typeAction,
+      paiementClientUuid: data.paiementClientUuid.present
+          ? data.paiementClientUuid.value
+          : this.paiementClientUuid,
+      motif: data.motif.present ? data.motif.value : this.motif,
+      statut: data.statut.present ? data.statut.value : this.statut,
+      dateDemande: data.dateDemande.present
+          ? data.dateDemande.value
+          : this.dateDemande,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DemandeValidation(')
+          ..write('id: $id, ')
+          ..write('clientUuid: $clientUuid, ')
+          ..write('typeAction: $typeAction, ')
+          ..write('paiementClientUuid: $paiementClientUuid, ')
+          ..write('motif: $motif, ')
+          ..write('statut: $statut, ')
+          ..write('dateDemande: $dateDemande')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    clientUuid,
+    typeAction,
+    paiementClientUuid,
+    motif,
+    statut,
+    dateDemande,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DemandeValidation &&
+          other.id == this.id &&
+          other.clientUuid == this.clientUuid &&
+          other.typeAction == this.typeAction &&
+          other.paiementClientUuid == this.paiementClientUuid &&
+          other.motif == this.motif &&
+          other.statut == this.statut &&
+          other.dateDemande == this.dateDemande);
+}
+
+class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
+  final Value<String?> id;
+  final Value<String> clientUuid;
+  final Value<String> typeAction;
+  final Value<String> paiementClientUuid;
+  final Value<String?> motif;
+  final Value<String> statut;
+  final Value<DateTime> dateDemande;
+  final Value<int> rowid;
+  const DemandesValidationCompanion({
+    this.id = const Value.absent(),
+    this.clientUuid = const Value.absent(),
+    this.typeAction = const Value.absent(),
+    this.paiementClientUuid = const Value.absent(),
+    this.motif = const Value.absent(),
+    this.statut = const Value.absent(),
+    this.dateDemande = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DemandesValidationCompanion.insert({
+    this.id = const Value.absent(),
+    required String clientUuid,
+    this.typeAction = const Value.absent(),
+    required String paiementClientUuid,
+    this.motif = const Value.absent(),
+    this.statut = const Value.absent(),
+    required DateTime dateDemande,
+    this.rowid = const Value.absent(),
+  }) : clientUuid = Value(clientUuid),
+       paiementClientUuid = Value(paiementClientUuid),
+       dateDemande = Value(dateDemande);
+  static Insertable<DemandeValidation> custom({
+    Expression<String>? id,
+    Expression<String>? clientUuid,
+    Expression<String>? typeAction,
+    Expression<String>? paiementClientUuid,
+    Expression<String>? motif,
+    Expression<String>? statut,
+    Expression<DateTime>? dateDemande,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (clientUuid != null) 'client_uuid': clientUuid,
+      if (typeAction != null) 'type_action': typeAction,
+      if (paiementClientUuid != null)
+        'paiement_client_uuid': paiementClientUuid,
+      if (motif != null) 'motif': motif,
+      if (statut != null) 'statut': statut,
+      if (dateDemande != null) 'date_demande': dateDemande,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DemandesValidationCompanion copyWith({
+    Value<String?>? id,
+    Value<String>? clientUuid,
+    Value<String>? typeAction,
+    Value<String>? paiementClientUuid,
+    Value<String?>? motif,
+    Value<String>? statut,
+    Value<DateTime>? dateDemande,
+    Value<int>? rowid,
+  }) {
+    return DemandesValidationCompanion(
+      id: id ?? this.id,
+      clientUuid: clientUuid ?? this.clientUuid,
+      typeAction: typeAction ?? this.typeAction,
+      paiementClientUuid: paiementClientUuid ?? this.paiementClientUuid,
+      motif: motif ?? this.motif,
+      statut: statut ?? this.statut,
+      dateDemande: dateDemande ?? this.dateDemande,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clientUuid.present) {
+      map['client_uuid'] = Variable<String>(clientUuid.value);
+    }
+    if (typeAction.present) {
+      map['type_action'] = Variable<String>(typeAction.value);
+    }
+    if (paiementClientUuid.present) {
+      map['paiement_client_uuid'] = Variable<String>(paiementClientUuid.value);
+    }
+    if (motif.present) {
+      map['motif'] = Variable<String>(motif.value);
+    }
+    if (statut.present) {
+      map['statut'] = Variable<String>(statut.value);
+    }
+    if (dateDemande.present) {
+      map['date_demande'] = Variable<DateTime>(dateDemande.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DemandesValidationCompanion(')
+          ..write('id: $id, ')
+          ..write('clientUuid: $clientUuid, ')
+          ..write('typeAction: $typeAction, ')
+          ..write('paiementClientUuid: $paiementClientUuid, ')
+          ..write('motif: $motif, ')
+          ..write('statut: $statut, ')
+          ..write('dateDemande: $dateDemande, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1194,6 +1763,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ElevesTable eleves = $ElevesTable(this);
   late final $EcheancesTable echeances = $EcheancesTable(this);
   late final $PaiementsTable paiements = $PaiementsTable(this);
+  late final $DemandesValidationTable demandesValidation =
+      $DemandesValidationTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1202,11 +1773,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     eleves,
     echeances,
     paiements,
+    demandesValidation,
   ];
 }
 
 typedef $$ElevesTableCreateCompanionBuilder = ElevesCompanion Function({
   required String id,
+  Value<String> matricule,
   required String nom,
   required String prenom,
   required String classe,
@@ -1215,6 +1788,7 @@ typedef $$ElevesTableCreateCompanionBuilder = ElevesCompanion Function({
 });
 typedef $$ElevesTableUpdateCompanionBuilder = ElevesCompanion Function({
   Value<String> id,
+  Value<String> matricule,
   Value<String> nom,
   Value<String> prenom,
   Value<String> classe,
@@ -1233,6 +1807,11 @@ class $$ElevesTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get matricule => $composableBuilder(
+    column: $table.matricule,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1271,6 +1850,11 @@ class $$ElevesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get matricule => $composableBuilder(
+    column: $table.matricule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get nom => $composableBuilder(
     column: $table.nom,
     builder: (column) => ColumnOrderings(column),
@@ -1303,6 +1887,9 @@ class $$ElevesTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get matricule =>
+      $composableBuilder(column: $table.matricule, builder: (column) => column);
 
   GeneratedColumn<String> get nom =>
       $composableBuilder(column: $table.nom, builder: (column) => column);
@@ -1346,6 +1933,7 @@ class $$ElevesTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
+                Value<String> matricule = const Value.absent(),
                 Value<String> nom = const Value.absent(),
                 Value<String> prenom = const Value.absent(),
                 Value<String> classe = const Value.absent(),
@@ -1353,6 +1941,7 @@ class $$ElevesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => ElevesCompanion(
                 id: id,
+                matricule: matricule,
                 nom: nom,
                 prenom: prenom,
                 classe: classe,
@@ -1362,6 +1951,7 @@ class $$ElevesTableTableManager
           createCompanionCallback:
               ({
                 required String id,
+                Value<String> matricule = const Value.absent(),
                 required String nom,
                 required String prenom,
                 required String classe,
@@ -1369,6 +1959,7 @@ class $$ElevesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => ElevesCompanion.insert(
                 id: id,
+                matricule: matricule,
                 nom: nom,
                 prenom: prenom,
                 classe: classe,
@@ -1599,6 +2190,7 @@ typedef $$PaiementsTableCreateCompanionBuilder = PaiementsCompanion Function({
   required String modePaiement,
   Value<String?> note,
   required DateTime dateLocale,
+  Value<String> statut,
   Value<int> rowid,
 });
 typedef $$PaiementsTableUpdateCompanionBuilder = PaiementsCompanion Function({
@@ -1609,6 +2201,7 @@ typedef $$PaiementsTableUpdateCompanionBuilder = PaiementsCompanion Function({
   Value<String> modePaiement,
   Value<String?> note,
   Value<DateTime> dateLocale,
+  Value<String> statut,
   Value<int> rowid,
 });
 
@@ -1653,6 +2246,11 @@ class $$PaiementsTableFilterComposer
 
   ColumnFilters<DateTime> get dateLocale => $composableBuilder(
     column: $table.dateLocale,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get statut => $composableBuilder(
+    column: $table.statut,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1700,6 +2298,11 @@ class $$PaiementsTableOrderingComposer
     column: $table.dateLocale,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get statut => $composableBuilder(
+    column: $table.statut,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PaiementsTableAnnotationComposer
@@ -1739,6 +2342,9 @@ class $$PaiementsTableAnnotationComposer
     column: $table.dateLocale,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get statut =>
+      $composableBuilder(column: $table.statut, builder: (column) => column);
 }
 
 class $$PaiementsTableTableManager
@@ -1776,6 +2382,7 @@ class $$PaiementsTableTableManager
                 Value<String> modePaiement = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<DateTime> dateLocale = const Value.absent(),
+                Value<String> statut = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PaiementsCompanion(
                 id: id,
@@ -1785,6 +2392,7 @@ class $$PaiementsTableTableManager
                 modePaiement: modePaiement,
                 note: note,
                 dateLocale: dateLocale,
+                statut: statut,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1796,6 +2404,7 @@ class $$PaiementsTableTableManager
                 required String modePaiement,
                 Value<String?> note = const Value.absent(),
                 required DateTime dateLocale,
+                Value<String> statut = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PaiementsCompanion.insert(
                 id: id,
@@ -1805,6 +2414,7 @@ class $$PaiementsTableTableManager
                 modePaiement: modePaiement,
                 note: note,
                 dateLocale: dateLocale,
+                statut: statut,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -1829,6 +2439,265 @@ typedef $$PaiementsTableProcessedTableManager =
       Paiement,
       PrefetchHooks Function()
     >;
+typedef $$DemandesValidationTableCreateCompanionBuilder =
+    DemandesValidationCompanion Function({
+      Value<String?> id,
+      required String clientUuid,
+      Value<String> typeAction,
+      required String paiementClientUuid,
+      Value<String?> motif,
+      Value<String> statut,
+      required DateTime dateDemande,
+      Value<int> rowid,
+    });
+typedef $$DemandesValidationTableUpdateCompanionBuilder =
+    DemandesValidationCompanion Function({
+      Value<String?> id,
+      Value<String> clientUuid,
+      Value<String> typeAction,
+      Value<String> paiementClientUuid,
+      Value<String?> motif,
+      Value<String> statut,
+      Value<DateTime> dateDemande,
+      Value<int> rowid,
+    });
+
+class $$DemandesValidationTableFilterComposer
+    extends Composer<_$AppDatabase, $DemandesValidationTable> {
+  $$DemandesValidationTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get typeAction => $composableBuilder(
+    column: $table.typeAction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paiementClientUuid => $composableBuilder(
+    column: $table.paiementClientUuid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get motif => $composableBuilder(
+    column: $table.motif,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get statut => $composableBuilder(
+    column: $table.statut,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateDemande => $composableBuilder(
+    column: $table.dateDemande,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DemandesValidationTableOrderingComposer
+    extends Composer<_$AppDatabase, $DemandesValidationTable> {
+  $$DemandesValidationTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get typeAction => $composableBuilder(
+    column: $table.typeAction,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paiementClientUuid => $composableBuilder(
+    column: $table.paiementClientUuid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get motif => $composableBuilder(
+    column: $table.motif,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get statut => $composableBuilder(
+    column: $table.statut,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateDemande => $composableBuilder(
+    column: $table.dateDemande,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DemandesValidationTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DemandesValidationTable> {
+  $$DemandesValidationTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get typeAction => $composableBuilder(
+    column: $table.typeAction,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get paiementClientUuid => $composableBuilder(
+    column: $table.paiementClientUuid,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get motif =>
+      $composableBuilder(column: $table.motif, builder: (column) => column);
+
+  GeneratedColumn<String> get statut =>
+      $composableBuilder(column: $table.statut, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateDemande => $composableBuilder(
+    column: $table.dateDemande,
+    builder: (column) => column,
+  );
+}
+
+class $$DemandesValidationTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DemandesValidationTable,
+          DemandeValidation,
+          $$DemandesValidationTableFilterComposer,
+          $$DemandesValidationTableOrderingComposer,
+          $$DemandesValidationTableAnnotationComposer,
+          $$DemandesValidationTableCreateCompanionBuilder,
+          $$DemandesValidationTableUpdateCompanionBuilder,
+          (
+            DemandeValidation,
+            BaseReferences<
+              _$AppDatabase,
+              $DemandesValidationTable,
+              DemandeValidation
+            >,
+          ),
+          DemandeValidation,
+          PrefetchHooks Function()
+        > {
+  $$DemandesValidationTableTableManager(
+    _$AppDatabase db,
+    $DemandesValidationTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DemandesValidationTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DemandesValidationTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DemandesValidationTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String?> id = const Value.absent(),
+                Value<String> clientUuid = const Value.absent(),
+                Value<String> typeAction = const Value.absent(),
+                Value<String> paiementClientUuid = const Value.absent(),
+                Value<String?> motif = const Value.absent(),
+                Value<String> statut = const Value.absent(),
+                Value<DateTime> dateDemande = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DemandesValidationCompanion(
+                id: id,
+                clientUuid: clientUuid,
+                typeAction: typeAction,
+                paiementClientUuid: paiementClientUuid,
+                motif: motif,
+                statut: statut,
+                dateDemande: dateDemande,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> id = const Value.absent(),
+                required String clientUuid,
+                Value<String> typeAction = const Value.absent(),
+                required String paiementClientUuid,
+                Value<String?> motif = const Value.absent(),
+                Value<String> statut = const Value.absent(),
+                required DateTime dateDemande,
+                Value<int> rowid = const Value.absent(),
+              }) => DemandesValidationCompanion.insert(
+                id: id,
+                clientUuid: clientUuid,
+                typeAction: typeAction,
+                paiementClientUuid: paiementClientUuid,
+                motif: motif,
+                statut: statut,
+                dateDemande: dateDemande,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DemandesValidationTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DemandesValidationTable,
+      DemandeValidation,
+      $$DemandesValidationTableFilterComposer,
+      $$DemandesValidationTableOrderingComposer,
+      $$DemandesValidationTableAnnotationComposer,
+      $$DemandesValidationTableCreateCompanionBuilder,
+      $$DemandesValidationTableUpdateCompanionBuilder,
+      (
+        DemandeValidation,
+        BaseReferences<
+          _$AppDatabase,
+          $DemandesValidationTable,
+          DemandeValidation
+        >,
+      ),
+      DemandeValidation,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1839,4 +2708,6 @@ class $AppDatabaseManager {
       $$EcheancesTableTableManager(_db, _db.echeances);
   $$PaiementsTableTableManager get paiements =>
       $$PaiementsTableTableManager(_db, _db.paiements);
+  $$DemandesValidationTableTableManager get demandesValidation =>
+      $$DemandesValidationTableTableManager(_db, _db.demandesValidation);
 }
