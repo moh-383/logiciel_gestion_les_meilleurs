@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/sync_service.dart';
 import 'features/paiements/paiements_list_screen.dart';
 
 void main() {
-  // ProviderScope est requis à la racine dès qu'on utilise Riverpod.
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
+
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Démarre l'écoute de connexion dès le lancement de l'app : dès que
+    // le réseau revient, les paiements en attente sont envoyés au
+    // serveur automatiquement, sans action de l'utilisateur.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(syncServiceProvider).demarrerEcouteConnexion();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

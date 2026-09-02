@@ -31,7 +31,8 @@ class Paiements extends Table {
   TextColumn get modePaiement => text()();
   TextColumn get note => text().nullable()();
   DateTimeColumn get dateLocale => dateTime()();
-  ColumnBuilder<String> get syncStatus => text().withDefault(const Constant('en_attente'));
+  TextColumn get syncStatus => text().withDefault(const Constant('en_attente'))();
+  TextColumn get syncRaison => text().nullable()(); // renseigné si syncStatus = 'conflit'
   TextColumn get statut => text().withDefault(const Constant('valide'))(); // valide / annule
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/database.dart';
+import '../../core/sync_service.dart';
 import 'encaissement_form_screen.dart';
 import 'paiement_historique_screen.dart';
 import 'demandes_validation_screen.dart';
@@ -154,28 +155,58 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
   }
 }
 
-class _BandeauHorsLigne extends StatelessWidget {
+class _BandeauHorsLigne extends ConsumerWidget {
   const _BandeauHorsLigne();
 
   @override
-  Widget build(BuildContext context) {
-    // Pour l'instant statique — sera branché sur un vrai statut de connexion
-    // et un compteur de paiements non synchronisés au moment du Sprint 4.
-    return Container(
-      width: double.infinity,
-      color: Colors.orange.shade50,
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-      child: Row(
-        children: const [
-          Icon(Icons.cloud_off, size: 14, color: Colors.orange),
-          SizedBox(width: 6),
-          Text('Mode hors-ligne — synchronisation à la reconnexion',
-              style: TextStyle(fontSize: 12, color: Colors.orange)),
-        ],
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nbNonSyncAsync = ref.watch(nbNonSynchronisesProvider);
+
+    return nbNonSyncAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (nb) {
+        if (nb == 0) return const SizedBox.shrink();
+        return Container(
+          width: double.infinity,
+          color: Colors.orange.shade50,
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+          child: Row(
+            children: [
+              const Icon(Icons.cloud_off, size: 14, color: Colors.orange),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '$nb paiement(s) en attente de synchronisation',
+                  style: const TextStyle(fontSize: 12, color: Colors.orange),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final resultat =
+                      await ref.read(syncServiceProvider).synchroniser();
+                  if (context.mounted) {
+                    final message = resultat.erreurReseau != null
+                        ? 'Synchronisation impossible pour le moment (pas de connexion au serveur)'
+                        : '${resultat.nbCrees} synchronisé(s), ${resultat.nbConflits} conflit(s)';
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(message)));
+                  }
+                },
+                child: const Text('Synchroniser', style: TextStyle(fontSize: 12)),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
+
+final nbNonSynchronisesProvider = StreamProvider<int>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchNbPaiementsNonSynchronises();
+});
 
 class _CarteStat extends StatelessWidget {
   final String label;

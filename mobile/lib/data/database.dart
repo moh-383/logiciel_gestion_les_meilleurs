@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3; // v2 : matricule · v3 : statut paiement + demandes de validation
+  int get schemaVersion => 4; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison
 
   @override
   MigrationStrategy get migration {
@@ -52,6 +52,9 @@ class AppDatabase extends _$AppDatabase {
         if (from < 3) {
           await m.addColumn(paiements, paiements.statut);
           await m.createTable(demandesValidation);
+        }
+        if (from < 4) {
+          await m.addColumn(paiements, paiements.syncRaison);
         }
       },
     );
@@ -188,6 +191,50 @@ class AppDatabase extends _$AppDatabase {
             ..where((p) => p.clientUuid.equals(demande.paiementClientUuid)))
           .write(const PaiementsCompanion(statut: Value('annule')));
     }
+  }
+  /// Paiements pas encore confirmés par le serveur — ceux qu'il faut
+  /// envoyer lors de la prochaine synchronisation.
+  Future<List<Paiement>> paiementsEnAttenteDeSync() {
+    return (select(paiements)
+          ..where((p) => p.syncStatus.equals('en_attente')))
+        .get();
+  }
+
+  /// Applique le résultat de /sync/paiements renvoyé par le serveur
+  /// à un paiement local donné (voir docs/api-contract.md, §6).
+  Future<void> appliquerResultatSync({
+    required String clientUuid,
+    required String statut, // 'cree' ou 'conflit'
+    String? paiementIdServeur,
+    String? raison,
+  }) async {
+    if (statut == 'cree') {
+      await (update(paiements)..where((p) => p.clientUuid.equals(clientUuid)))
+          .write(PaiementsCompanion(
+        id: Value(paiementIdServeur),
+        syncStatus: const Value('synchronise'),
+        syncRaison: const Value(null),
+      ));
+    } else {
+      // 'conflit' : le paiement reste en local, visible pour arbitrage
+      // manuel — on ne le supprime jamais silencieusement.
+      await (update(paiements)..where((p) => p.clientUuid.equals(clientUuid)))
+          .write(PaiementsCompanion(
+        syncStatus: const Value('conflit'),
+        syncRaison: Value(raison),
+      ));
+    }
+  }
+
+  /// Nombre de paiements pas encore synchronisés (en attente + en conflit)
+  /// — sert au badge affiché en haut de la liste.
+  Stream<int> watchNbPaiementsNonSynchronises() {
+    final query = selectOnly(paiements)
+      ..addColumns([paiements.clientUuid.count()])
+      ..where(paiements.syncStatus.isIn(['en_attente', 'conflit']));
+    return query
+        .map((row) => row.read(paiements.clientUuid.count()) ?? 0)
+        .watchSingle();
   }
 }
 
