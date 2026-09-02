@@ -845,6 +845,29 @@ class $PaiementsTable extends Paiements
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en_attente'),
+  );
+  static const VerificationMeta _syncRaisonMeta = const VerificationMeta(
+    'syncRaison',
+  );
+  @override
+  late final GeneratedColumn<String> syncRaison = GeneratedColumn<String>(
+    'sync_raison',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _statutMeta = const VerificationMeta('statut');
   @override
   late final GeneratedColumn<String> statut = GeneratedColumn<String>(
@@ -864,6 +887,8 @@ class $PaiementsTable extends Paiements
     modePaiement,
     note,
     dateLocale,
+    syncStatus,
+    syncRaison,
     statut,
   ];
   @override
@@ -930,6 +955,18 @@ class $PaiementsTable extends Paiements
     } else if (isInserting) {
       context.missing(_dateLocaleMeta);
     }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('sync_raison')) {
+      context.handle(
+        _syncRaisonMeta,
+        syncRaison.isAcceptableOrUnknown(data['sync_raison']!, _syncRaisonMeta),
+      );
+    }
     if (data.containsKey('statut')) {
       context.handle(
         _statutMeta,
@@ -973,6 +1010,14 @@ class $PaiementsTable extends Paiements
         DriftSqlType.dateTime,
         data['${effectivePrefix}date_locale'],
       )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      syncRaison: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_raison'],
+      ),
       statut: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}statut'],
@@ -994,6 +1039,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
   final String modePaiement;
   final String? note;
   final DateTime dateLocale;
+  final String syncStatus;
+  final String? syncRaison;
   final String statut;
   const Paiement({
     this.id,
@@ -1003,6 +1050,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
     required this.modePaiement,
     this.note,
     required this.dateLocale,
+    required this.syncStatus,
+    this.syncRaison,
     required this.statut,
   });
   @override
@@ -1019,6 +1068,10 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       map['note'] = Variable<String>(note);
     }
     map['date_locale'] = Variable<DateTime>(dateLocale);
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || syncRaison != null) {
+      map['sync_raison'] = Variable<String>(syncRaison);
+    }
     map['statut'] = Variable<String>(statut);
     return map;
   }
@@ -1032,6 +1085,10 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       modePaiement: Value(modePaiement),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       dateLocale: Value(dateLocale),
+      syncStatus: Value(syncStatus),
+      syncRaison: syncRaison == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncRaison),
       statut: Value(statut),
     );
   }
@@ -1049,6 +1106,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       modePaiement: serializer.fromJson<String>(json['modePaiement']),
       note: serializer.fromJson<String?>(json['note']),
       dateLocale: serializer.fromJson<DateTime>(json['dateLocale']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncRaison: serializer.fromJson<String?>(json['syncRaison']),
       statut: serializer.fromJson<String>(json['statut']),
     );
   }
@@ -1063,6 +1122,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       'modePaiement': serializer.toJson<String>(modePaiement),
       'note': serializer.toJson<String?>(note),
       'dateLocale': serializer.toJson<DateTime>(dateLocale),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncRaison': serializer.toJson<String?>(syncRaison),
       'statut': serializer.toJson<String>(statut),
     };
   }
@@ -1075,6 +1136,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
     String? modePaiement,
     Value<String?> note = const Value.absent(),
     DateTime? dateLocale,
+    String? syncStatus,
+    Value<String?> syncRaison = const Value.absent(),
     String? statut,
   }) => Paiement(
     id: id.present ? id.value : this.id,
@@ -1084,6 +1147,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
     modePaiement: modePaiement ?? this.modePaiement,
     note: note.present ? note.value : this.note,
     dateLocale: dateLocale ?? this.dateLocale,
+    syncStatus: syncStatus ?? this.syncStatus,
+    syncRaison: syncRaison.present ? syncRaison.value : this.syncRaison,
     statut: statut ?? this.statut,
   );
   Paiement copyWithCompanion(PaiementsCompanion data) {
@@ -1103,6 +1168,12 @@ class Paiement extends DataClass implements Insertable<Paiement> {
       dateLocale: data.dateLocale.present
           ? data.dateLocale.value
           : this.dateLocale,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      syncRaison: data.syncRaison.present
+          ? data.syncRaison.value
+          : this.syncRaison,
       statut: data.statut.present ? data.statut.value : this.statut,
     );
   }
@@ -1117,6 +1188,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
           ..write('modePaiement: $modePaiement, ')
           ..write('note: $note, ')
           ..write('dateLocale: $dateLocale, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncRaison: $syncRaison, ')
           ..write('statut: $statut')
           ..write(')'))
         .toString();
@@ -1131,10 +1204,10 @@ class Paiement extends DataClass implements Insertable<Paiement> {
     modePaiement,
     note,
     dateLocale,
+    syncStatus,
+    syncRaison,
     statut,
   );
-
-  get syncStatus => null;
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1146,6 +1219,8 @@ class Paiement extends DataClass implements Insertable<Paiement> {
           other.modePaiement == this.modePaiement &&
           other.note == this.note &&
           other.dateLocale == this.dateLocale &&
+          other.syncStatus == this.syncStatus &&
+          other.syncRaison == this.syncRaison &&
           other.statut == this.statut);
 }
 
@@ -1157,6 +1232,8 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
   final Value<String> modePaiement;
   final Value<String?> note;
   final Value<DateTime> dateLocale;
+  final Value<String> syncStatus;
+  final Value<String?> syncRaison;
   final Value<String> statut;
   final Value<int> rowid;
   const PaiementsCompanion({
@@ -1167,6 +1244,8 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     this.modePaiement = const Value.absent(),
     this.note = const Value.absent(),
     this.dateLocale = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncRaison = const Value.absent(),
     this.statut = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1178,6 +1257,8 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     required String modePaiement,
     this.note = const Value.absent(),
     required DateTime dateLocale,
+    this.syncStatus = const Value.absent(),
+    this.syncRaison = const Value.absent(),
     this.statut = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientUuid = Value(clientUuid),
@@ -1193,6 +1274,8 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     Expression<String>? modePaiement,
     Expression<String>? note,
     Expression<DateTime>? dateLocale,
+    Expression<String>? syncStatus,
+    Expression<String>? syncRaison,
     Expression<String>? statut,
     Expression<int>? rowid,
   }) {
@@ -1204,6 +1287,8 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
       if (modePaiement != null) 'mode_paiement': modePaiement,
       if (note != null) 'note': note,
       if (dateLocale != null) 'date_locale': dateLocale,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncRaison != null) 'sync_raison': syncRaison,
       if (statut != null) 'statut': statut,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1217,6 +1302,8 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     Value<String>? modePaiement,
     Value<String?>? note,
     Value<DateTime>? dateLocale,
+    Value<String>? syncStatus,
+    Value<String?>? syncRaison,
     Value<String>? statut,
     Value<int>? rowid,
   }) {
@@ -1228,6 +1315,8 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
       modePaiement: modePaiement ?? this.modePaiement,
       note: note ?? this.note,
       dateLocale: dateLocale ?? this.dateLocale,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncRaison: syncRaison ?? this.syncRaison,
       statut: statut ?? this.statut,
       rowid: rowid ?? this.rowid,
     );
@@ -1257,6 +1346,12 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
     if (dateLocale.present) {
       map['date_locale'] = Variable<DateTime>(dateLocale.value);
     }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncRaison.present) {
+      map['sync_raison'] = Variable<String>(syncRaison.value);
+    }
     if (statut.present) {
       map['statut'] = Variable<String>(statut.value);
     }
@@ -1276,6 +1371,8 @@ class PaiementsCompanion extends UpdateCompanion<Paiement> {
           ..write('modePaiement: $modePaiement, ')
           ..write('note: $note, ')
           ..write('dateLocale: $dateLocale, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncRaison: $syncRaison, ')
           ..write('statut: $statut, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2190,6 +2287,8 @@ typedef $$PaiementsTableCreateCompanionBuilder = PaiementsCompanion Function({
   required String modePaiement,
   Value<String?> note,
   required DateTime dateLocale,
+  Value<String> syncStatus,
+  Value<String?> syncRaison,
   Value<String> statut,
   Value<int> rowid,
 });
@@ -2201,6 +2300,8 @@ typedef $$PaiementsTableUpdateCompanionBuilder = PaiementsCompanion Function({
   Value<String> modePaiement,
   Value<String?> note,
   Value<DateTime> dateLocale,
+  Value<String> syncStatus,
+  Value<String?> syncRaison,
   Value<String> statut,
   Value<int> rowid,
 });
@@ -2246,6 +2347,16 @@ class $$PaiementsTableFilterComposer
 
   ColumnFilters<DateTime> get dateLocale => $composableBuilder(
     column: $table.dateLocale,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2299,6 +2410,16 @@ class $$PaiementsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get statut => $composableBuilder(
     column: $table.statut,
     builder: (column) => ColumnOrderings(column),
@@ -2343,6 +2464,16 @@ class $$PaiementsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get statut =>
       $composableBuilder(column: $table.statut, builder: (column) => column);
 }
@@ -2382,6 +2513,8 @@ class $$PaiementsTableTableManager
                 Value<String> modePaiement = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<DateTime> dateLocale = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncRaison = const Value.absent(),
                 Value<String> statut = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PaiementsCompanion(
@@ -2392,6 +2525,8 @@ class $$PaiementsTableTableManager
                 modePaiement: modePaiement,
                 note: note,
                 dateLocale: dateLocale,
+                syncStatus: syncStatus,
+                syncRaison: syncRaison,
                 statut: statut,
                 rowid: rowid,
               ),
@@ -2404,6 +2539,8 @@ class $$PaiementsTableTableManager
                 required String modePaiement,
                 Value<String?> note = const Value.absent(),
                 required DateTime dateLocale,
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncRaison = const Value.absent(),
                 Value<String> statut = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PaiementsCompanion.insert(
@@ -2414,6 +2551,8 @@ class $$PaiementsTableTableManager
                 modePaiement: modePaiement,
                 note: note,
                 dateLocale: dateLocale,
+                syncStatus: syncStatus,
+                syncRaison: syncRaison,
                 statut: statut,
                 rowid: rowid,
               ),
