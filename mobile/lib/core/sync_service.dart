@@ -1,8 +1,10 @@
 import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../data/database.dart';
 import '../features/paiements/paiements_list_screen.dart' show databaseProvider;
 import 'api_client.dart';
@@ -36,9 +38,9 @@ class SyncService {
   /// À appeler une fois au démarrage de l'app : synchronise dès que
   /// la connexion revient, sans action de l'utilisateur.
   void demarrerEcouteConnexion() {
-    _connectivitySub = Connectivity()
-        .onConnectivityChanged
-        .listen((List<ConnectivityResult> resultats) {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> resultats,
+    ) {
       final connecte = resultats.any((r) => r != ConnectivityResult.none);
       if (connecte) {
         synchroniser();
@@ -67,13 +69,15 @@ class SyncService {
 
       final corps = {
         'paiements': enAttente
-            .map((p) => {
-                  'client_uuid': p.clientUuid,
-                  'echeance_id': p.echeanceId,
-                  'montant': p.montant,
-                  'mode_paiement': p.modePaiement,
-                  'date_locale': p.dateLocale.toIso8601String(),
-                })
+            .map(
+              (p) => {
+                'client_uuid': p.clientUuid,
+                'echeance_id': p.echeanceId,
+                'montant': p.montant,
+                'mode_paiement': p.modePaiement,
+                'date_locale': p.dateLocale.toIso8601String(),
+              },
+            )
             .toList(),
       };
 

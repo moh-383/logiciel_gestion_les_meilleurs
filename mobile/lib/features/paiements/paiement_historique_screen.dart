@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../data/database.dart';
 import 'paiements_list_screen.dart' show databaseProvider;
 
@@ -33,7 +34,7 @@ class PaiementHistoriqueScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: paiements.length,
-            separatorBuilder: (_,_) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final item = paiements[index];
               final p = item.paiement;
@@ -63,15 +64,23 @@ class PaiementHistoriqueScreen extends ConsumerWidget {
     );
   }
 
-  Widget _actionPourPaiement(BuildContext context, WidgetRef ref,
-      PaiementAvecDemande item, bool annule) {
+  Widget _actionPourPaiement(
+    BuildContext context,
+    WidgetRef ref,
+    PaiementAvecDemande item,
+    bool annule,
+  ) {
     if (annule) {
-      return const Text('Annulé',
-          style: TextStyle(fontSize: 12, color: Colors.red));
+      return const Text(
+        'Annulé',
+        style: TextStyle(fontSize: 12, color: Colors.red),
+      );
     }
     if (item.demandeEnAttente) {
-      return const Text('Demande en attente',
-          style: TextStyle(fontSize: 12, color: Colors.orange));
+      return const Text(
+        'Demande en attente',
+        style: TextStyle(fontSize: 12, color: Colors.orange),
+      );
     }
     return TextButton(
       onPressed: () => _ouvrirDialogueAnnulation(context, ref, item.paiement),
@@ -80,7 +89,10 @@ class PaiementHistoriqueScreen extends ConsumerWidget {
   }
 
   Future<void> _ouvrirDialogueAnnulation(
-      BuildContext context, WidgetRef ref, Paiement paiement) async {
+    BuildContext context,
+    WidgetRef ref,
+    Paiement paiement,
+  ) async {
     final motifController = TextEditingController();
 
     final confirme = await showDialog<bool>(
@@ -92,7 +104,8 @@ class PaiementHistoriqueScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-                'Paiement de ${paiement.montant.toStringAsFixed(0)} FCFA du ${_formatDate(paiement.dateLocale)}.'),
+              'Paiement de ${paiement.montant.toStringAsFixed(0)} FCFA du ${_formatDate(paiement.dateLocale)}.',
+            ),
             const SizedBox(height: 8),
             const Text(
               'Cette demande sera soumise au responsable de site. '

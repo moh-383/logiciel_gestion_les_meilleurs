@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../data/database.dart';
 import 'paiements_list_screen.dart' show databaseProvider;
 
@@ -41,15 +42,23 @@ class DemandesValidationScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _traiter(BuildContext context, WidgetRef ref,
-      DemandeAvecPaiement item, bool approuver) async {
+  Future<void> _traiter(
+    BuildContext context,
+    WidgetRef ref,
+    DemandeAvecPaiement item,
+    bool approuver,
+  ) async {
     final confirme = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(approuver ? 'Approuver la demande ?' : 'Rejeter la demande ?'),
-        content: Text(approuver
-            ? 'Le paiement de ${item.paiement.montant.toStringAsFixed(0)} FCFA sera marqué comme annulé.'
-            : 'Le paiement reste valide, la demande est classée comme rejetée.'),
+        title: Text(
+          approuver ? 'Approuver la demande ?' : 'Rejeter la demande ?',
+        ),
+        content: Text(
+          approuver
+              ? 'Le paiement de ${item.paiement.montant.toStringAsFixed(0)} FCFA sera marqué comme annulé.'
+              : 'Le paiement reste valide, la demande est classée comme rejetée.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -73,7 +82,9 @@ class DemandesValidationScreen extends ConsumerWidget {
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(approuver ? 'Demande approuvée' : 'Demande rejetée')),
+        SnackBar(
+          content: Text(approuver ? 'Demande approuvée' : 'Demande rejetée'),
+        ),
       );
     }
   }
@@ -104,22 +115,28 @@ class _CarteDemande extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('${item.paiement.montant.toStringAsFixed(0)} FCFA',
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(
+                '${item.paiement.montant.toStringAsFixed(0)} FCFA',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: Colors.orange.shade50,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text('En attente',
-                    style: TextStyle(fontSize: 11, color: Colors.orange)),
+                child: const Text(
+                  'En attente',
+                  style: TextStyle(fontSize: 11, color: Colors.orange),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Text('Motif : ${item.demande.motif ?? "—"}',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+          Text(
+            'Motif : ${item.demande.motif ?? "—"}',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+          ),
           const SizedBox(height: 10),
           Row(
             children: [

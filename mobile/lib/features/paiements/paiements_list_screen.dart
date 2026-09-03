@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../data/database.dart';
 import '../../core/sync_service.dart';
 import 'encaissement_form_screen.dart';
@@ -58,14 +59,18 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
             final texteRecherche = recherche.toLowerCase();
             final correspondNom =
                 e.eleveNom.toLowerCase().contains(texteRecherche) ||
-                    e.matricule.toLowerCase().contains(texteRecherche);
+                e.matricule.toLowerCase().contains(texteRecherche);
             final correspondStatut =
                 filtreStatut == 'tous' || e.statut == filtreStatut;
             return correspondNom && correspondStatut;
           }).toList();
 
           final collecte = echeances.fold<double>(
-              0, (total, e) => total + (e.montantDu - e.montantRestant).clamp(0, double.infinity));
+            0,
+            (total, e) =>
+                total +
+                (e.montantDu - e.montantRestant).clamp(0, double.infinity),
+          );
           final nbAttentionRequise = echeances
               .where((e) => e.statut == 'en_retard' || e.statut == 'partiel')
               .length;
@@ -80,13 +85,15 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
                     _CarteStat(label: 'Élèves', valeur: '${echeances.length}'),
                     const SizedBox(width: 10),
                     _CarteStat(
-                        label: 'Collecté',
-                        valeur: '${collecte.toStringAsFixed(0)} F'),
+                      label: 'Collecté',
+                      valeur: '${collecte.toStringAsFixed(0)} F',
+                    ),
                     const SizedBox(width: 10),
                     _CarteStat(
-                        label: 'Attention requise',
-                        valeur: '$nbAttentionRequise',
-                        alerte: nbAttentionRequise > 0),
+                      label: 'Attention requise',
+                      valeur: '$nbAttentionRequise',
+                      alerte: nbAttentionRequise > 0,
+                    ),
                   ],
                 ),
               ),
@@ -101,18 +108,31 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
                           prefixIcon: Icon(Icons.search),
                           border: OutlineInputBorder(),
                         ),
-                        onChanged: (valeur) => setState(() => recherche = valeur),
+                        onChanged: (valeur) =>
+                            setState(() => recherche = valeur),
                       ),
                     ),
                     const SizedBox(width: 10),
                     DropdownButton<String>(
                       value: filtreStatut,
                       items: const [
-                        DropdownMenuItem(value: 'tous', child: Text('Tous les statuts')),
-                        DropdownMenuItem(value: 'en_retard', child: Text('En retard')),
-                        DropdownMenuItem(value: 'partiel', child: Text('Partiel')),
+                        DropdownMenuItem(
+                          value: 'tous',
+                          child: Text('Tous les statuts'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'en_retard',
+                          child: Text('En retard'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'partiel',
+                          child: Text('Partiel'),
+                        ),
                         DropdownMenuItem(value: 'solde', child: Text('Soldé')),
-                        DropdownMenuItem(value: 'avance', child: Text('Avance')),
+                        DropdownMenuItem(
+                          value: 'avance',
+                          child: Text('Avance'),
+                        ),
                       ],
                       onChanged: (valeur) =>
                           setState(() => filtreStatut = valeur ?? 'tous'),
@@ -144,8 +164,10 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
           // de la liste — pas besoin d'un écran séparé pour l'instant.
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text(
-                    'Recherche un élève ci-dessus, puis touche "Encaisser"')),
+              content: Text(
+                'Recherche un élève ci-dessus, puis touche "Encaisser"',
+              ),
+            ),
           );
         },
         icon: const Icon(Icons.add),
@@ -183,8 +205,9 @@ class _BandeauHorsLigne extends ConsumerWidget {
               ),
               TextButton(
                 onPressed: () async {
-                  final resultat =
-                      await ref.read(syncServiceProvider).synchroniser();
+                  final resultat = await ref
+                      .read(syncServiceProvider)
+                      .synchroniser();
                   if (context.mounted) {
                     final message = resultat.erreurReseau != null
                         ? 'Synchronisation impossible pour le moment (pas de connexion au serveur)'
@@ -193,7 +216,10 @@ class _BandeauHorsLigne extends ConsumerWidget {
                         .showSnackBar(SnackBar(content: Text(message)));
                   }
                 },
-                child: const Text('Synchroniser', style: TextStyle(fontSize: 12)),
+                child: const Text(
+                  'Synchroniser',
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
             ],
           ),
@@ -231,16 +257,22 @@ class _CarteStat extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: alerte ? Colors.red.shade700 : Colors.grey.shade600)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: alerte ? Colors.red.shade700 : Colors.grey.shade600,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(valeur,
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: alerte ? Colors.red.shade700 : Colors.black)),
+            Text(
+              valeur,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: alerte ? Colors.red.shade700 : Colors.black,
+              ),
+            ),
           ],
         ),
       ),
@@ -269,44 +301,46 @@ class _LigneEcheance extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(echeance.eleveNom,
-                    style: const TextStyle(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 2),
-                Text(
-                  echeance.statut == 'avance'
-                      ? '${echeance.classe} — ${(-echeance.montantRestant).toStringAsFixed(0)} F d\'avance'
-                      : '${echeance.classe} — reste ${echeance.montantRestant.toStringAsFixed(0)} F',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-          ),
-          _PastilleStatut(echeance: echeance),
-          const SizedBox(width: 8),
-          if (echeance.statut == 'en_retard' || echeance.statut == 'partiel')
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        EncaissementFormScreen(echeance: echeance),
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    echeance.eleveNom,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
-                );
-              },
-              child: const Text('Encaisser'),
-            )
-          else
-            Icon(Icons.check_circle,
-                color: echeance.statut == 'avance'
-                    ? Colors.blue
-                    : Colors.green,
-                size: 20),
-        ],
+                  const SizedBox(height: 2),
+                  Text(
+                    echeance.statut == 'avance'
+                        ? '${echeance.classe} — ${(-echeance.montantRestant).toStringAsFixed(0)} F d\'avance'
+                        : '${echeance.classe} — reste ${echeance.montantRestant.toStringAsFixed(0)} F',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            ),
+            _PastilleStatut(echeance: echeance),
+            const SizedBox(width: 8),
+            if (echeance.statut == 'en_retard' || echeance.statut == 'partiel')
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          EncaissementFormScreen(echeance: echeance),
+                    ),
+                  );
+                },
+                child: const Text('Encaisser'),
+              )
+            else
+              Icon(
+                Icons.check_circle,
+                color: echeance.statut == 'avance' ? Colors.blue : Colors.green,
+                size: 20,
+              ),
+          ],
         ),
       ),
     );
@@ -352,8 +386,7 @@ class _PastilleStatut extends StatelessWidget {
         color: couleurFond,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(texte,
-          style: TextStyle(fontSize: 11, color: couleurTexte)),
+      child: Text(texte, style: TextStyle(fontSize: 11, color: couleurTexte)),
     );
   }
 }
