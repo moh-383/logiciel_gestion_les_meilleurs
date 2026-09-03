@@ -46,13 +46,13 @@ Monorepo, un dossier par composant :
 ├── docs/
 │   ├── cahier_des_charges.docx
 │   ├── maquettes.html
-│   └── api-contract.md  # à créer ensemble avant de coder (endpoints, schémas)
+│   └── api-contract.md
     └── schema-bdd.md    #base de données (le mcd) 
     └── planning-sprints.md
 ├── .github/
-│   └── workflows/              # CI (lint, tests) : à mettre en place
+│   └── workflows/              
 ├── README.md
-└── CONTRIBUTING.md             # convention de code, branches, commits
+└── CONTRIBUTING.md  # convention de code, branches, commits
 ```
 
 Chaque sous-dossier (`backend/`, `mobile/`, `web/`) aura son propre README technique une fois le projet initialisé (installation, variables d'environnement, lancement local).
