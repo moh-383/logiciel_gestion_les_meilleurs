@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'core/sync_service.dart';
 import 'features/paiements/paiements_list_screen.dart';
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:uuid/uuid.dart';
+
 import '../../data/database.dart';
 import 'paiements_list_screen.dart' show databaseProvider;
 
@@ -38,9 +39,9 @@ class _EncaissementFormScreenState
   Future<void> _enregistrerPaiement() async {
     final montant = double.tryParse(_montantController.text.trim());
     if (montant == null || montant <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Entre un montant valide')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Entre un montant valide')));
       return;
     }
 
@@ -49,7 +50,9 @@ class _EncaissementFormScreenState
     final db = ref.read(databaseProvider);
     final clientUuid = const Uuid().v4();
 
-    await db.into(db.paiements).insertOnConflictUpdate(
+    await db
+        .into(db.paiements)
+        .insertOnConflictUpdate(
           PaiementsCompanion.insert(
             clientUuid: clientUuid,
             echeanceId: widget.echeance.echeanceId,
@@ -65,9 +68,8 @@ class _EncaissementFormScreenState
     if (!mounted) return;
     setState(() => enregistrement = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Paiement enregistré')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Paiement enregistré')));
     Navigator.of(context).pop();
   }
 
@@ -104,25 +106,37 @@ class _EncaissementFormScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(e.eleveNom,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w600)),
-                        Text(e.classe,
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey.shade600)),
+                        Text(
+                          e.eleveNom,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          e.classe,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Reste à payer',
-                          style: TextStyle(
-                              fontSize: 11, color: Colors.grey.shade600)),
-                      Text('${resteAffiche.toStringAsFixed(0)} FCFA',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.red)),
+                      Text(
+                        'Reste à payer',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      Text(
+                        '${resteAffiche.toStringAsFixed(0)} FCFA',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -130,11 +144,14 @@ class _EncaissementFormScreenState
             ),
 
             const SizedBox(height: 24),
-            Text('MONTANT REÇU',
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600)),
+            Text(
+              'MONTANT REÇU',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _montantController,
@@ -160,18 +177,22 @@ class _EncaissementFormScreenState
                 ),
                 OutlinedButton(
                   onPressed: () => _definirMontant(
-                      resteAffiche > 0 ? resteAffiche.toDouble() : 0),
+                    resteAffiche > 0 ? resteAffiche.toDouble() : 0,
+                  ),
                   child: const Text('Tout payer'),
                 ),
               ],
             ),
 
             const SizedBox(height: 24),
-            Text('MODE DE PAIEMENT',
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600)),
+            Text(
+              'MODE DE PAIEMENT',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
+            ),
             const SizedBox(height: 4),
             _OptionModePaiement(
               titre: 'Espèces',
@@ -213,8 +234,10 @@ class _EncaissementFormScreenState
               children: const [
                 Icon(Icons.cloud_off, size: 14, color: Colors.grey),
                 SizedBox(width: 6),
-                Text('Sera synchronisé dès le retour de la connexion',
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  'Sera synchronisé dès le retour de la connexion',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
 
@@ -268,7 +291,8 @@ class _OptionModePaiement extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             border: Border.all(
-                color: selectionne ? couleur : Colors.grey.shade300),
+              color: selectionne ? couleur : Colors.grey.shade300,
+            ),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -279,11 +303,17 @@ class _OptionModePaiement extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(titre,
-                        style: const TextStyle(fontWeight: FontWeight.w500)),
-                    Text(sousTitre,
-                        style: TextStyle(
-                            fontSize: 12, color: Colors.grey.shade600)),
+                    Text(
+                      titre,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    Text(
+                      sousTitre,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ],
                 ),
               ),
