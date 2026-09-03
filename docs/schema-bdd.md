@@ -108,7 +108,18 @@ Un poste occupable (Direction générale, Direction pédagogique, Responsable de
 - `tous_sites` : `true` pour les postes de direction (accès multi-sites), `false` sinon.
 
 ### `PERMISSION`
-Catalogue des permissions modulaires disponibles : `voir_finances`, `voir_pedagogie`, `gerer_comptes`, `valider_actions_sensibles`, etc. Ce catalogue est extensible sans modification du modèle de données.
+Catalogue des permissions modulaires disponibles. Extensible sans modification du modèle de données (ajouter une ligne suffit, aucune migration de structure).
+
+| Code | Libellé | Domaine | Endpoints concernés |
+|---|---|---|---|
+| `gerer_eleves` | Créer/modifier les élèves et leurs contacts | Élèves | `POST/PATCH /eleves`, `/eleves/{id}/contacts`, `/contacts/{id}` |
+| `voir_pedagogie` | Voir les rapports et données pédagogiques | Élèves/Pédagogie | Réservé V2 (module Enseignants/Rapports) |
+| `gerer_comptes` | Gérer postes, permissions, utilisateurs, sites | Administration | `/postes/*`, `/permissions`, `/utilisateurs/*`, `POST/PATCH /sites` |
+| `saisir_paiement` | Enregistrer un paiement, soumettre une demande d'annulation | Paiements | `POST /paiements`, `/paiements/{id}/demande-annulation`, `POST /sync/paiements` |
+| `voir_finances` | Consulter paiements, retards, statistiques financières d'un site | Paiements | `GET /sites/{id}/paiements`, `/sites/{id}/stats/paiements` |
+| `valider_actions_sensibles` | Approuver/rejeter les demandes de validation (ex. annulation de paiement) | Workflow | `/demandes-validation/*` |
+
+**Note V2** : `voir_pedagogie` est posé dès le MVP pour éviter une migration de schéma plus tard, mais reste sans endpoint tant que le module Enseignants (Lot 2) n'existe pas. Décision actée : un enseignant (V2) n'aura **pas** accès à la fiche élève complète — seulement aux données pédagogiques le concernant (présence, notes de ses propres cours). Le périmètre exact sera défini au Sprint 8.
 
 ### `POSTE_PERMISSION`
 Table de liaison many-to-many entre postes et permissions, c'est le cœur du système de permissions modulaires.
