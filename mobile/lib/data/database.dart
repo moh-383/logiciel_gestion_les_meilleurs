@@ -38,8 +38,8 @@ class EcheanceAvecSolde {
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
-  @override
-  int get schemaVersion => 4; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison
+@override
+int get schemaVersion => 5; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison · v5 : note
 
   @override
   MigrationStrategy get migration {
@@ -57,6 +57,9 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 4) {
           await m.addColumn(paiements, paiements.syncRaison);
+        }
+        if (from < 5) {
+          await m.addColumn(paiements, paiements.note);
         }
       },
     );

@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.CoursDAppuiLesMeilleurs.mobile"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
