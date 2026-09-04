@@ -1,13 +1,10 @@
 from rest_framework import generics, viewsets
 from rest_framework.exceptions import PermissionDenied
 
-from core.permissions import ALaPermissionMetier
+from core.permissions import ALaPermissionMetier, dans_perimetre
 from .models import ContactParent, Echeance, Eleve
 from .serializers import ContactParentSerializer, EcheanceSerializer, EleveSerializer
 
-
-def dans_perimetre(user, site_id):
-    return user.tous_sites or str(user.site_id) == str(site_id)
 
 
 class EleveViewSet(viewsets.ModelViewSet):

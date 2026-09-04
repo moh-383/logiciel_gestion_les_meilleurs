@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from core.permissions import ALaPermissionMetier
+from core.permissions import ALaPermissionMetier, dans_perimetre
 from .models import Utilisateur
 from .serializers import UtilisateurSerializer
 
@@ -49,8 +49,46 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Utilisateur.objects.select_related("poste", "site").order_by("nom")
+
+        user = self.request.user
+
+        if not user.tous_sites:
+            queryset = queryset.filter(site_id=user.site_id)
+
         for key in ("site_id", "poste_id", "actif"):
             value = self.request.query_params.get(key)
             if value is not None:
-                queryset = queryset.filter(**{"is_active" if key == "actif" else key: value})
+                queryset = queryset.filter(
+                    **{"is_active" if key == "actif" else key: value}
+                )
+
         return queryset
+
+    def perform_create(self, serializer): 
+        site = serializer.validated_data.get("site")
+
+        if site is not None and not dans_perimetre(
+            self.request.user,
+            site.id
+        ):
+            raise PermissionDenied(
+                "Vous ne pouvez pas créer un utilisateur sur ce site."
+            )
+
+        serializer.save()
+
+    def perform_update(self, serializer):
+        site = serializer.validated_data.get(
+            "site",
+            serializer.instance.site
+        )
+
+        if site is not None and not dans_perimetre(
+            self.request.user,
+            site.id
+        ):
+            raise PermissionDenied(
+                "Vous ne pouvez pas affecter cet utilisateur à ce site."
+            )
+
+        serializer.save()   
