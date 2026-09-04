@@ -1,8 +1,8 @@
 
-from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from core.models import Permission, Poste, Site
+
 from .models import Utilisateur
 
 
@@ -97,11 +97,11 @@ class CloisonnementUtilisateurApiTests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_liste_utilisateurs_filtree_par_site(self):
-        response = self.client.get("/api/v1/utilisateurs/")
+        response = self.client.get("/api/v1/utilisateurs")
 
         self.assertEqual(response.status_code, 200)
 
-        utilisateurs = response.data
+        utilisateurs = response.data["data"]
 
         self.assertTrue(
             any(
@@ -119,7 +119,7 @@ class CloisonnementUtilisateurApiTests(APITestCase):
 
     def test_creation_utilisateur_dans_un_autre_site_est_refusee(self):
         response = self.client.post(
-            "/api/v1/utilisateurs/",
+            "/api/v1/utilisateurs",
             {
                 "telephone": "+22670000003",
                 "mot_de_passe": "mot-de-passe-solide",
