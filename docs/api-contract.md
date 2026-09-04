@@ -148,7 +148,7 @@ L'app mobile stocke localement les paiements créés sans connexion. Dès que la
 ```json
 {
   "paiements": [
-    { "client_uuid": "uuid-1", "echeance_id": "uuid", "montant": 15000, "mode_paiement": "especes", "date_locale": "2026-08-20T10:15:00Z" },
+    { "client_uuid": "uuid-1", "echeance_id": "uuid", "montant": 15000, "mode_paiement": "especes", "note": "paiement partiel", "date_locale": "2026-08-20T10:15:00Z" },
     { "client_uuid": "uuid-2", "echeance_id": "uuid", "montant": 5000, "mode_paiement": "especes", "date_locale": "2026-08-20T10:22:00Z" }
   ]
 }
@@ -164,6 +164,10 @@ L'app mobile stocke localement les paiements créés sans connexion. Dès que la
 }
 ```
 Un `statut: "conflit"` ne supprime pas le paiement côté serveur ni côté mobile, il reste visible pour arbitrage manuel par le responsable de site ou la direction (voir `docs/schema-bdd.md`, section sur la résolution de conflits).
+
+`note` est nullable et doit être conservée pendant la synchronisation. Pour une
+requête répétée avec le même `client_uuid`, le serveur répond de nouveau avec
+`statut: "cree"` et le même `paiement_id` : aucun doublon ne doit être créé.
 
 ---
 

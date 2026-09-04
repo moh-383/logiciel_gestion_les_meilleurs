@@ -75,7 +75,9 @@ class SyncService {
                 'echeance_id': p.echeanceId,
                 'montant': p.montant,
                 'mode_paiement': p.modePaiement,
-                'date_locale': p.dateLocale.toIso8601String(),
+                // Le contrat API impose UTC (suffixe `Z`), même si la date
+                // est stockée en heure locale pour l'affichage hors ligne.
+                'date_locale': p.dateLocale.toUtc().toIso8601String(),
               },
             )
             .toList(),
