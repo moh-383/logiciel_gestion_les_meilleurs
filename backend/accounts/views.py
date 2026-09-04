@@ -2,6 +2,7 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 from core.permissions import ALaPermissionMetier, dans_perimetre
 from .models import Utilisateur
@@ -37,7 +38,7 @@ class DeconnexionView(APIView):
             return Response({"error": "requete_invalide", "message": "refresh_token obligatoire."}, status=status.HTTP_400_BAD_REQUEST)
         try:
             RefreshToken(token).blacklist()
-        except Exception:
+        except TokenError:
             return Response({"error": "requete_invalide", "message": "refresh_token invalide."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -91,4 +92,4 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
                 "Vous ne pouvez pas affecter cet utilisateur à ce site."
             )
 
-        serializer.save()   
+        serializer.save()
