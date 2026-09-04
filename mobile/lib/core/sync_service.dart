@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -16,12 +17,16 @@ class ResultatSync {
   final int nbCrees;
   final int nbConflits;
   final String? erreurReseau;
+  final String? erreurAuthentification;
+  final String? erreurMetier;
 
   ResultatSync({
     required this.nbEnvoyes,
     required this.nbCrees,
     required this.nbConflits,
     this.erreurReseau,
+    this.erreurAuthentification,
+    this.erreurMetier,
   });
 }
 
@@ -75,7 +80,8 @@ class SyncService {
                 'echeance_id': p.echeanceId,
                 'montant': p.montant,
                 'mode_paiement': p.modePaiement,
-                'date_locale': p.dateLocale.toIso8601String(),
+                if (p.note != null) 'note': p.note,
+                'date_locale': p.dateLocale.toUtc().toIso8601String(),
               },
             )
             .toList(),
@@ -83,7 +89,7 @@ class SyncService {
 
       final reponse = await dio.post('/sync/paiements', data: corps);
       final resultats = (reponse.data['resultats'] as List)
-          .cast<Map<String, dynamic>>();
+          .map((r) => Map<String, dynamic>.from(r as Map));
 
       int nbCrees = 0;
       int nbConflits = 0;
@@ -94,7 +100,11 @@ class SyncService {
           clientUuid: r['client_uuid'] as String,
           statut: statut,
           paiementIdServeur: r['paiement_id'] as String?,
-          raison: r['raison'] as String?,
+          raison: r['raison'] == null
+              ? null
+              : r['raison'] is String
+                  ? r['raison'] as String
+                  : jsonEncode(r['raison']),
         );
         if (statut == 'cree') {
           nbCrees++;
@@ -109,19 +119,43 @@ class SyncService {
         nbConflits: nbConflits,
       );
     } on DioException catch (e) {
-      // Backend injoignable, timeout, etc. — normal tant qu'il n'existe
-      // pas encore. Les paiements restent "en_attente" en local, rien
-      // n'est perdu, on retentera à la prochaine reconnexion détectée.
-      debugPrint('⚠️ Synchronisation impossible pour le moment : ${e.message}');
+      final code = e.response?.statusCode;
+      final message = _messageErreur(e);
+      debugPrint('Synchronisation échouée ($code) : $message');
+      // Seules les pannes réseau/serveur sont automatiquement réessayées.
+      // Une erreur d'authentification ou métier est affichée, sans perdre
+      // les paiements locaux encore en attente.
+      if (code == 401) {
+        return ResultatSync(
+          nbEnvoyes: 0,
+          nbCrees: 0,
+          nbConflits: 0,
+          erreurAuthentification: message,
+        );
+      }
+      if (code != null && code >= 400 && code < 500) {
+        return ResultatSync(
+          nbEnvoyes: 0,
+          nbCrees: 0,
+          nbConflits: 0,
+          erreurMetier: message,
+        );
+      }
       return ResultatSync(
         nbEnvoyes: 0,
         nbCrees: 0,
         nbConflits: 0,
-        erreurReseau: e.message,
+        erreurReseau: message,
       );
     } finally {
       _syncEnCours = false;
     }
+  }
+
+  String _messageErreur(DioException erreur) {
+    final data = erreur.response?.data;
+    if (data is Map && data['message'] is String) return data['message'] as String;
+    return erreur.message ?? 'Le serveur est inaccessible.';
   }
 }
 

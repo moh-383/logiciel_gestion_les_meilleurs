@@ -1,10 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// URL de base de l'API — à adapter une fois le backend déployé.
-/// En attendant, elle pointe vers une adresse locale qui échouera
-/// proprement (voir SyncService, qui gère ce cas sans planter l'app).
-const String apiBaseUrl = 'http://localhost:8000/api/v1';
+import 'api_config.dart';
+import 'auth_service.dart';
 
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
@@ -12,8 +10,11 @@ final dioProvider = Provider<Dio>((ref) {
       baseUrl: apiBaseUrl,
       connectTimeout: const Duration(seconds: 8),
       receiveTimeout: const Duration(seconds: 8),
+      headers: const {'Accept': 'application/json'},
     ),
   );
-
+  dio.interceptors.add(
+    AuthInterceptor(dio: dio, tokenStore: ref.read(tokenStoreProvider)),
+  );
   return dio;
 });

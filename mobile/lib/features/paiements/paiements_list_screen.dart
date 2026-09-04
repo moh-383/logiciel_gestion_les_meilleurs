@@ -209,9 +209,13 @@ class _BandeauHorsLigne extends ConsumerWidget {
                       .read(syncServiceProvider)
                       .synchroniser();
                   if (context.mounted) {
-                    final message = resultat.erreurReseau != null
-                        ? 'Synchronisation impossible pour le moment (pas de connexion au serveur)'
-                        : '${resultat.nbCrees} synchronisé(s), ${resultat.nbConflits} conflit(s)';
+                final message = resultat.erreurAuthentification != null
+                    ? 'Session expirée : reconnecte-toi pour synchroniser.'
+                    : resultat.erreurMetier != null
+                        ? 'Synchronisation refusée : ${resultat.erreurMetier}'
+                        : resultat.erreurReseau != null
+                            ? 'Synchronisation impossible pour le moment (pas de connexion au serveur)'
+                            : '${resultat.nbCrees} synchronisé(s), ${resultat.nbConflits} conflit(s)';
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(message)));
                   }
