@@ -81,7 +81,17 @@ class TokenStore {
     );
   }
 
-  Future<void> save(UserSession session) => _storage.writeAll(session.toStorage());
+  /// IMPORTANT : FlutterSecureStorage n'a pas de méthode `writeAll` native.
+  /// On écrit chaque paire clé/valeur individuellement — sans ça, aucune
+  /// session n'est jamais réellement persistée (bug corrigé le 2026-09-04 :
+  /// une ancienne extension `writeAll` no-op masquait le problème).
+  Future<void> save(UserSession session) async {
+    final entries = session.toStorage();
+    for (final entry in entries.entries) {
+      await _storage.write(key: entry.key, value: entry.value);
+    }
+  }
+
   Future<String?> accessToken() => _storage.read(key: _accessTokenKey);
   Future<String?> refreshToken() => _storage.read(key: _refreshTokenKey);
   Future<void> updateTokens({required String accessToken, String? refreshToken}) async {
@@ -91,10 +101,6 @@ class TokenStore {
     }
   }
   Future<void> clear() => _storage.deleteAll();
-}
-
-extension on FlutterSecureStorage {
-  Future<void> writeAll(Map<String, String> storage) async {}
 }
 
 final tokenStoreProvider = Provider<TokenStore>((ref) => TokenStore());
