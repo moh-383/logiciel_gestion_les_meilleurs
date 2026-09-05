@@ -3,14 +3,16 @@ from rest_framework.exceptions import PermissionDenied
 
 from core.permissions import ALaPermissionMetier, dans_perimetre
 from .models import ContactParent, Echeance, Eleve
-from .serializers import ContactParentSerializer, EcheanceSerializer, EleveSerializer
-
-
+from .serializers import ContactParentSerializer, EcheanceSerializer, EleveDetailSerializer, EleveSerializer
 
 class EleveViewSet(viewsets.ModelViewSet):
     serializer_class = EleveSerializer
     permission_classes = (ALaPermissionMetier,)
-
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return EleveDetailSerializer
+        return EleveSerializer
+    
     def get_queryset(self):
         qs = Eleve.objects.select_related("site").prefetch_related("contacts").order_by("nom", "prenom")
         user = self.request.user

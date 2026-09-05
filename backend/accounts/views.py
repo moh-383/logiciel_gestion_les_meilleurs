@@ -51,47 +51,57 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
     permission_metier = "gerer_comptes"
 
     def get_queryset(self):
+        user = self.request.user
         queryset = Utilisateur.objects.select_related("poste", "site").order_by("nom")
 
-        user = self.request.user
-
+        # Cloisonnement appliqué côté serveur : un utilisateur sans
+        # tous_sites ne voit jamais que les comptes de son propre site,
+        # quel que soit ce que le client envoie en paramètre.
         if not user.tous_sites:
             queryset = queryset.filter(site_id=user.site_id)
 
-        for key in ("site_id", "poste_id", "actif"):
-            value = self.request.query_params.get(key)
-            if value is not None:
-                queryset = queryset.filter(
-                    **{"is_active" if key == "actif" else key: value}
-                )
+        poste_id = self.request.query_params.get("poste_id")
+        if poste_id:
+            queryset = queryset.filter(poste_id=poste_id)
+
+        actif = self.request.query_params.get("actif")
+        if actif is not None:
+            queryset = queryset.filter(is_active=actif)
+
+        # site_id reste un filtre optionnel, mais uniquement à l'intérieur
+        # du périmètre déjà imposé ci-dessus — jamais pour l'élargir.
+        site_id = self.request.query_params.get("site_id")
+        if site_id:
+            if not dans_perimetre(user, site_id):
+                raise PermissionDenied("Site hors de votre périmètre.")
+            queryset = queryset.filter(site_id=site_id)
 
         return queryset
 
-    def perform_create(self, serializer): 
+    def perform_create(self, serializer):
+        user = self.request.user
         site = serializer.validated_data.get("site")
-
-        if site is not None and not dans_perimetre(
-            self.request.user,
-            site.id
-        ):
-            raise PermissionDenied(
-                "Vous ne pouvez pas créer un utilisateur sur ce site."
-            )
-
-        serializer.save()
+        if not user.tous_sites:
+            if site is not None and str(site.id) != str(user.site_id):
+                raise PermissionDenied("Site hors de votre périmètre.")
+            serializer.save(site=user.site)
+        else:
+            serializer.save()
 
     def perform_update(self, serializer):
-        site = serializer.validated_data.get(
-            "site",
-            serializer.instance.site
+
+def perform_update(self, serializer):
+    site = serializer.validated_data.get(
+        "site",
+        serializer.instance.site
+    )
+
+    if site is not None and not dans_perimetre(
+        self.request.user,
+        site.id
+    ):
+        raise PermissionDenied(
+            "Vous ne pouvez pas affecter cet utilisateur à ce site."
         )
 
-        if site is not None and not dans_perimetre(
-            self.request.user,
-            site.id
-        ):
-            raise PermissionDenied(
-                "Vous ne pouvez pas affecter cet utilisateur à ce site."
-            )
-
-        serializer.save()
+    serializer.save()

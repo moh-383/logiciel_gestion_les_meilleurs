@@ -10,8 +10,15 @@ class ALaPermissionMetier(BasePermission):
             return bool(request.user and request.user.is_authenticated)
         return request.user.is_authenticated and request.user.a_permission(required)
 
+
 def dans_perimetre(user, site_id):
     """
-    Vérifie si l'utilisateur a accès au site demandé.
+    Vrai si `user` peut accéder aux données du site `site_id` :
+    - soit son poste a `tous_sites = True` (direction),
+    - soit c'est exactement son propre site.
     """
-    return user.tous_sites or str(user.site_id) == str(site_id)
+    if user.tous_sites:
+        return True
+    if site_id is None or user.site_id is None:
+        return False
+    return str(user.site_id) == str(site_id)
