@@ -5,6 +5,8 @@ from django.db import models
 
 class Eleve(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    client_uuid = models.UUIDField(null=True, blank=True, unique=True)
+
     matricule = models.CharField(max_length=50, unique=True)
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)

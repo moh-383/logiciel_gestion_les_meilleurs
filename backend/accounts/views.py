@@ -88,7 +88,6 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
         else:
             serializer.save()
 
-    def perform_update(self, serializer):
 
 def perform_update(self, serializer):
     site = serializer.validated_data.get(
