@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:uuid/uuid.dart';
 
+import '../../core/paiement_validation.dart';
 import '../../data/database.dart';
 import 'paiements_list_screen.dart' show databaseProvider;
 
@@ -38,10 +39,14 @@ class _EncaissementFormScreenState
 
   Future<void> _enregistrerPaiement() async {
     final montant = double.tryParse(_montantController.text.trim());
-    if (montant == null || montant <= 0) {
+    final erreur = validerMontantPaiement(
+      montant: montant,
+      montantRestant: widget.echeance.montantRestant,
+    );
+    if (erreur != null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Entre un montant valide')));
+      ).showSnackBar(SnackBar(content: Text(erreur)));
       return;
     }
 
@@ -56,7 +61,10 @@ class _EncaissementFormScreenState
           PaiementsCompanion.insert(
             clientUuid: clientUuid,
             echeanceId: widget.echeance.echeanceId,
-            montant: montant,
+            // FCFA : pas de décimales. On arrondit ici pour rester cohérent
+            // avec le backend (DecimalField(decimal_places=0)) et éviter
+            // tout écart d'arrondi flottant entre les deux côtés.
+            montant: montant!.roundToDouble(),
             modePaiement: modePaiement,
             note: _noteController.text.trim().isEmpty
                 ? const Value.absent()

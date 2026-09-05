@@ -34,12 +34,33 @@ class EcheanceAvecSolde {
   });
 }
 
+/// Vérifie si une colonne existe réellement dans le fichier SQLite, avant
+/// de tenter un `ALTER TABLE ... ADD COLUMN`. Sans ce garde-fou, un appareil
+/// dont la base a déjà reçu la colonne par un autre chemin (ex. une build
+/// antérieure qui la créait directement dans le schéma, avant l'ajout du
+/// bloc de migration explicite) plante avec `duplicate column name` au
+/// démarrage — bug rencontré et corrigé le 2026-09-05 sur la colonne `note`.
+Future<bool> _colonneExiste(
+  GeneratedDatabase db,
+  String table,
+  String colonne,
+) async {
+  final lignes = await db.customSelect("PRAGMA table_info('$table')").get();
+  return lignes.any((row) => row.data['name'] == colonne);
+}
+
 @DriftDatabase(tables: [Eleves, Echeances, Paiements, DemandesValidation])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
-@override
-int get schemaVersion => 5; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison · v5 : note
+  /// Constructeur réservé aux tests : permet d'injecter un exécuteur en
+  /// mémoire (`NativeDatabase.memory()`) sans jamais toucher au chemin de
+  /// production ci-dessus (fichier SQLite réel sur l'appareil).
+  AppDatabase.forTesting(super.executor);
+
+  @override
+  int get schemaVersion =>
+      5; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison · v5 : note
 
   @override
   MigrationStrategy get migration {
@@ -59,7 +80,9 @@ int get schemaVersion => 5; // v2 : matricule · v3 : statut paiement + demandes
           await m.addColumn(paiements, paiements.syncRaison);
         }
         if (from < 5) {
-          await m.addColumn(paiements, paiements.note);
+          if (!await _colonneExiste(this, 'paiements', 'note')) {
+            await m.addColumn(paiements, paiements.note);
+          }
         }
       },
     );
