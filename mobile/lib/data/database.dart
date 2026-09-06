@@ -292,6 +292,25 @@ class AppDatabase extends _$AppDatabase {
         .map((row) => row.read(paiements.clientUuid.count()) ?? 0)
         .watchSingle();
   }
+
+  /// Importe (upsert) les élèves reçus du backend. Ne supprime jamais un
+  /// élève local absent de la réponse : un élève transféré/désactivé
+  /// côté serveur ne doit pas faire disparaître silencieusement son
+  /// historique de paiements déjà synchronisé sur l'appareil.
+  Future<void> upsertEleves(List<ElevesCompanion> liste) async {
+    if (liste.isEmpty) return;
+    await batch((b) {
+      b.insertAllOnConflictUpdate(eleves, liste);
+    });
+  }
+
+  /// Idem pour les échéances.
+  Future<void> upsertEcheances(List<EcheancesCompanion> liste) async {
+    if (liste.isEmpty) return;
+    await batch((b) {
+      b.insertAllOnConflictUpdate(echeances, liste);
+    });
+  }
 }
 
 class PaiementAvecDemande {

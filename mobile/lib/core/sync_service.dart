@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/database.dart';
 import '../features/paiements/paiements_list_screen.dart' show databaseProvider;
 import 'api_client.dart';
+import 'import_service.dart';
 
 /// Résultat d'une tentative de synchronisation, pour affichage éventuel
 /// dans l'UI (nombre envoyé, nombre en échec, etc.)
@@ -32,23 +33,29 @@ class ResultatSync {
 
 /// Gère l'envoi des paiements en attente vers /sync/paiements
 /// (voir docs/api-contract.md, §6) et l'écoute de la reconnexion réseau.
+/// Déclenche aussi un import des élèves/échéances à la reconnexion, pour
+/// que les données de référence restent à jour sans action manuelle.
 class SyncService {
   final AppDatabase db;
   final Dio dio;
+  final ImportService? importService;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _syncEnCours = false;
 
-  SyncService({required this.db, required this.dio});
+  SyncService({required this.db, required this.dio, this.importService});
 
   /// À appeler une fois au démarrage de l'app : synchronise dès que
   /// la connexion revient, sans action de l'utilisateur.
   void demarrerEcouteConnexion() {
     _connectivitySub = Connectivity().onConnectivityChanged.listen((
       List<ConnectivityResult> resultats,
-    ) {
+    ) async {
       final connecte = resultats.any((r) => r != ConnectivityResult.none);
       if (connecte) {
-        synchroniser();
+        // L'import ne doit jamais bloquer l'envoi des paiements en attente :
+        // s'il échoue (ex. session expirée), on tente quand même la sync.
+        await importService?.importerDonneesDuSite();
+        await synchroniser();
       }
     });
   }
@@ -164,5 +171,6 @@ class SyncService {
 final syncServiceProvider = Provider<SyncService>((ref) {
   final db = ref.watch(databaseProvider);
   final dio = ref.watch(dioProvider);
-  return SyncService(db: db, dio: dio);
+  final importService = ref.watch(importServiceProvider);
+  return SyncService(db: db, dio: dio, importService: importService);
 });

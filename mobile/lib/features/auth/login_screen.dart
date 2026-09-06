@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth_service.dart';
+import '../../core/import_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -34,6 +36,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             motDePasse: _motDePasseController.text,
           );
       ref.invalidate(sessionProvider);
+      // Premier peuplement des données de référence (élèves/échéances) :
+      // on ne bloque pas la connexion si ça échoue (ex. réseau capricieux
+      // juste après le login) — l'écran liste reste utilisable et
+      // l'import sera retenté à la prochaine reconnexion détectée.
+      unawaited(ref.read(importServiceProvider).importerDonneesDuSite());
     } on DioException catch (error) {
       final data = error.response?.data;
       final message = data is Map && data['message'] is String

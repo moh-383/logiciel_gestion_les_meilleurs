@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
+import '../../core/import_service.dart';
 import '../../core/sync_service.dart';
 import 'encaissement_form_screen.dart';
 import 'paiement_historique_screen.dart';
@@ -28,6 +29,11 @@ class PaiementsListScreen extends ConsumerStatefulWidget {
 class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
   String recherche = '';
   String filtreStatut = 'tous';
+
+  Future<void> _rafraichir() async {
+    await ref.read(importServiceProvider).importerDonneesDuSite();
+    await ref.read(syncServiceProvider).synchroniser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,17 +148,30 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
               ),
               const SizedBox(height: 8),
               Expanded(
-                child: filtrees.isEmpty
-                    ? const Center(child: Text('Aucun élève trouvé'))
-                    : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        itemCount: filtrees.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final e = filtrees[index];
-                          return _LigneEcheance(echeance: e);
-                        },
-                      ),
+                child: RefreshIndicator(
+                  onRefresh: _rafraichir,
+                  child: filtrees.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          children: const [
+                            SizedBox(
+                              height: 160,
+                              child: Center(child: Text('Aucun élève trouvé')),
+                            ),
+                          ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          itemCount: filtrees.length,
+                          separatorBuilder: (_, _) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final e = filtrees[index];
+                            return _LigneEcheance(echeance: e);
+                          },
+                        ),
+                ),
               ),
             ],
           );
@@ -209,13 +228,13 @@ class _BandeauHorsLigne extends ConsumerWidget {
                       .read(syncServiceProvider)
                       .synchroniser();
                   if (context.mounted) {
-                final message = resultat.erreurAuthentification != null
-                    ? 'Session expirée : reconnecte-toi pour synchroniser.'
-                    : resultat.erreurMetier != null
+                    final message = resultat.erreurAuthentification != null
+                        ? 'Session expirée : reconnecte-toi pour synchroniser.'
+                        : resultat.erreurMetier != null
                         ? 'Synchronisation refusée : ${resultat.erreurMetier}'
                         : resultat.erreurReseau != null
-                            ? 'Synchronisation impossible pour le moment (pas de connexion au serveur)'
-                            : '${resultat.nbCrees} synchronisé(s), ${resultat.nbConflits} conflit(s)';
+                        ? 'Synchronisation impossible pour le moment (pas de connexion au serveur)'
+                        : '${resultat.nbCrees} synchronisé(s), ${resultat.nbConflits} conflit(s)';
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(message)));
                   }
