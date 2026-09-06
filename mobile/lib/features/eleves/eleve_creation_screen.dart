@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/features/eleves/providers/eleve_providers.dart';
 
 import '../../core/auth_service.dart';
+import '../../core/import_service.dart';
 
 /// Écran de création d'élève (maquette écran 4). Le site est
 /// automatiquement celui de l'utilisateur connecté — cohérent avec le
@@ -18,7 +19,6 @@ class EleveCreationScreen extends ConsumerStatefulWidget {
 
 class _EleveCreationScreenState extends ConsumerState<EleveCreationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _matriculeController = TextEditingController();
   final _prenomController = TextEditingController();
   final _nomController = TextEditingController();
   final _classeController = TextEditingController();
@@ -31,7 +31,6 @@ class _EleveCreationScreenState extends ConsumerState<EleveCreationScreen> {
 
   @override
   void dispose() {
-    _matriculeController.dispose();
     _prenomController.dispose();
     _nomController.dispose();
     _classeController.dispose();
@@ -63,7 +62,6 @@ class _EleveCreationScreenState extends ConsumerState<EleveCreationScreen> {
     await ref
         .read(eleveRepositoryProvider)
         .creerEleveLocal(
-          matricule: _matriculeController.text.trim(),
           nom: _nomController.text.trim(),
           prenom: _prenomController.text.trim(),
           sexe: _sexe,
@@ -85,6 +83,9 @@ class _EleveCreationScreenState extends ConsumerState<EleveCreationScreen> {
     final resultatSync = await ref
         .read(eleveSyncServiceProvider)
         .synchroniser();
+    if (resultatSync.erreur == null) {
+      await ref.read(importServiceProvider).importerDonneesDuSite();
+    }
 
     if (!mounted) return;
     setState(() => _enregistrement = false);
@@ -196,14 +197,9 @@ class _EleveCreationScreenState extends ConsumerState<EleveCreationScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _matriculeController,
-              decoration: const InputDecoration(
-                labelText: 'Matricule',
-                border: OutlineInputBorder(),
-              ),
-              validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'Obligatoire' : null,
+            const Text(
+              'Le matricule sera attribué automatiquement par le serveur.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 12),
             Row(

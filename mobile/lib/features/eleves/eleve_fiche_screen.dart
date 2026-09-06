@@ -22,18 +22,17 @@ class EleveFicheScreen extends ConsumerWidget {
         appBar: AppBar(
           title: Text('${eleve.prenom} ${eleve.nom}'),
           actions: [
-            if (!eleve.enAttenteDeSync)
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                tooltip: 'Modifier l\'élève',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => EleveEditScreen(eleve: eleve),
-                    ),
-                  );
-                },
-              ),
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Modifier l\'élève',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => EleveEditScreen(eleve: eleve),
+                  ),
+                );
+              },
+            ),
             if (!eleve.enAttenteDeSync)
               IconButton(
                 icon: const Icon(Icons.add_card_outlined),
@@ -99,7 +98,12 @@ class _OngletInfos extends StatelessWidget {
           ),
         _section('Informations personnelles', [
           _ligne('Nom complet', '${eleve.prenom} ${eleve.nom}'),
-          _ligne('Matricule', eleve.matricule),
+          _ligne(
+            'Matricule',
+            eleve.matricule.isEmpty
+                ? 'En attente d\'attribution'
+                : eleve.matricule,
+          ),
           _ligne('Sexe', eleve.sexe == 'F' ? 'Féminin' : 'Masculin'),
           if (eleve.dateNaissance != null)
             _ligne(

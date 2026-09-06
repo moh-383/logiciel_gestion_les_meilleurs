@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database.dart';
 import '../../core/import_service.dart';
+import '../../core/auth_service.dart';
 import '../../core/sync_service.dart';
+import '../administration/administration_screen.dart';
 import 'encaissement_form_screen.dart';
 import 'paiement_historique_screen.dart';
 import 'demandes_validation_screen.dart';
@@ -39,11 +41,26 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
   @override
   Widget build(BuildContext context) {
     final echeancesAsync = ref.watch(echeancesProvider);
+    final session = ref
+        .watch(sessionProvider)
+        .whenOrNull(data: (value) => value);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Paiements'),
         actions: [
+          if (session?.permissions.contains('gerer_comptes') == true)
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings_outlined),
+              tooltip: 'Administration',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const AdministrationScreen(),
+                  ),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.groups_outlined),
             tooltip: 'Élèves',

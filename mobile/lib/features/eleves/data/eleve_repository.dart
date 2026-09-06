@@ -134,7 +134,6 @@ class EleveRepository {
   /// EleveSyncService se charge de l'envoi dès que possible. Ne touche
   /// jamais au cache `Eleves`, réservé aux données confirmées serveur.
   Future<String> creerEleveLocal({
-    required String matricule,
     required String nom,
     required String prenom,
     required String sexe,
@@ -152,7 +151,7 @@ class EleveRepository {
         .insert(
           ElevesEnAttenteCompanion.insert(
             clientUuid: clientUuid,
-            matricule: matricule,
+            matricule: '',
             nom: nom,
             prenom: prenom,
             sexe: sexe,
@@ -167,6 +166,31 @@ class EleveRepository {
           ),
         );
     return clientUuid;
+  }
+
+  Future<void> modifierEleveEnAttente({
+    required String clientUuid,
+    required String nom,
+    required String prenom,
+    required String sexe,
+    required String classe,
+    required String typeCours,
+    DateTime? dateNaissance,
+  }) async {
+    await (db.update(
+      db.elevesEnAttente,
+    )..where((e) => e.clientUuid.equals(clientUuid))).write(
+      ElevesEnAttenteCompanion(
+        nom: Value(nom),
+        prenom: Value(prenom),
+        sexe: Value(sexe),
+        classe: Value(classe),
+        typeCours: Value(typeCours),
+        dateNaissance: Value(dateNaissance),
+        syncStatus: const Value('en_attente'),
+        syncRaison: const Value(null),
+      ),
+    );
   }
 
   Future<List<EleveEnAttente>> elevesEnAttenteDeSync() {

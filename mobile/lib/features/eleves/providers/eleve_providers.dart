@@ -53,7 +53,6 @@ class EleveSyncService {
           .map(
             (eleve) => {
               'client_uuid': eleve.clientUuid,
-              'matricule': eleve.matricule,
               'nom': eleve.nom,
               'prenom': eleve.prenom,
               if (eleve.dateNaissance != null)

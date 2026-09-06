@@ -40,6 +40,9 @@ class EleveSerializer(serializers.ModelSerializer):
             "contacts",
         )
         read_only_fields = ("id",)
+        extra_kwargs = {
+            "matricule": {"required": False, "allow_blank": True},
+        }
 
     def create(self, validated_data):
         contacts = validated_data.pop("contacts", [])
@@ -138,6 +141,8 @@ class EleveSyncSerializer(EleveSerializer):
 
     matricule = serializers.CharField(
         max_length=50,
+        required=False,
+        allow_blank=True,
         validators=[],
     )
 

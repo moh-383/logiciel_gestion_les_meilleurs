@@ -81,6 +81,11 @@ Ce document fixe les endpoints du backend pour le MVP (Élèves & Inscriptions, 
 | PATCH | `/contacts/{id}` | `gerer_eleves` | Modifier un contact |
 | DELETE | `/contacts/{id}` | `gerer_eleves` | Retirer un contact |
 
+Le champ `matricule` est facultatif à la création. Lorsqu'il est absent ou
+vide, le serveur attribue un matricule unique au format `ELV-{année}-{séquence}`
+(par exemple `ELV-2026-001`). Les anciens matricules explicitement fournis
+restent acceptés afin de préserver les données existantes ; leur unicité reste
+contrôlée par le serveur.
 **Exemple `POST /eleves`** :
 ```json
 {

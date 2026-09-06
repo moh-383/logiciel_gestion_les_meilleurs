@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 
 from rest_framework.test import APITestCase
@@ -60,6 +61,26 @@ class EleveApiTests(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response.data["contacts"]), 1)
 
+    def test_creation_eleve_sans_matricule_le_genere_cote_serveur(self):
+        response = self.client.post(
+            "/api/v1/eleves",
+            {
+                "nom": "Kaboré",
+                "prenom": "Adama",
+                "sexe": "M",
+                "site_id": str(self.site.id),
+                "classe": "3ème B",
+                "type_cours": "renforcement_regulier",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertRegex(
+            response.data["matricule"],
+            rf"^ELV-{datetime.date.today().year}-\d{{3}}$",
+        )
+
     def test_creation_dans_un_autre_site_est_refusee(self):
         response = self.client.post(
             "/api/v1/eleves",
@@ -112,6 +133,32 @@ class EleveApiTests(APITestCase):
 
         self.assertEqual(eleve.matricule, "ELV-SYNC-001")
         self.assertEqual(eleve.contacts.count(), 1)
+
+    def test_sync_eleve_sans_matricule_le_genere_cote_serveur(self):
+        client_uuid = "ffffffff-ffff-ffff-ffff-ffffffffffff"
+
+        response = self.client.post(
+            "/api/v1/sync/eleves",
+            [
+                {
+                    "client_uuid": client_uuid,
+                    "nom": "Sawadogo",
+                    "prenom": "Boureima",
+                    "sexe": "M",
+                    "site_id": str(self.site.id),
+                    "classe": "2nde C",
+                    "type_cours": "renforcement_regulier",
+                }
+            ],
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["resultats"][0]["statut"], "cree")
+        self.assertRegex(
+            Eleve.objects.get(client_uuid=client_uuid).matricule,
+            rf"^ELV-{datetime.date.today().year}-\d{{3}}$",
+        )
 
     def test_sync_meme_client_uuid_ne_cree_pas_de_doublon(self):
         client_uuid = "cccccccc-cccc-cccc-cccc-cccccccccccc"

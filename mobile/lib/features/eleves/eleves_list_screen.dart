@@ -35,10 +35,10 @@ class _ElevesListScreenState extends ConsumerState<ElevesListScreen> {
 
           return RefreshIndicator(
             onRefresh: () async {
-              await ref.read(importServiceProvider).importerDonneesDuSite();
               final resultat = await ref
                   .read(eleveSyncServiceProvider)
                   .synchroniser();
+              await ref.read(importServiceProvider).importerDonneesDuSite();
               if (context.mounted && resultat.erreur != null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

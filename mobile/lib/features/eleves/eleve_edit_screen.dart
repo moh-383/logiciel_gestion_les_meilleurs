@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api_client.dart';
 import '../../core/import_service.dart';
 import 'data/eleve_repository.dart';
+import 'providers/eleve_providers.dart';
 
 class EleveEditScreen extends ConsumerStatefulWidget {
   final EleveAffichable eleve;
@@ -17,7 +18,6 @@ class EleveEditScreen extends ConsumerStatefulWidget {
 
 class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _matriculeController;
   late final TextEditingController _prenomController;
   late final TextEditingController _nomController;
   late final TextEditingController _classeController;
@@ -26,10 +26,11 @@ class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
   late String _typeCours;
   bool _enregistrement = false;
 
+  bool get _estEnAttente => widget.eleve.enAttenteDeSync;
+
   @override
   void initState() {
     super.initState();
-    _matriculeController = TextEditingController(text: widget.eleve.matricule);
     _prenomController = TextEditingController(text: widget.eleve.prenom);
     _nomController = TextEditingController(text: widget.eleve.nom);
     _classeController = TextEditingController(text: widget.eleve.classe);
@@ -42,7 +43,6 @@ class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
 
   @override
   void dispose() {
-    _matriculeController.dispose();
     _prenomController.dispose();
     _nomController.dispose();
     _classeController.dispose();
@@ -53,13 +53,43 @@ class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _enregistrement = true);
 
+    if (_estEnAttente) {
+      await ref
+          .read(eleveRepositoryProvider)
+          .modifierEleveEnAttente(
+            clientUuid: widget.eleve.clientUuidLocal!,
+            nom: _nomController.text.trim(),
+            prenom: _prenomController.text.trim(),
+            sexe: _sexe,
+            classe: _classeController.text.trim(),
+            typeCours: _typeCours,
+            dateNaissance: _dateNaissance,
+          );
+      final resultat = await ref.read(eleveSyncServiceProvider).synchroniser();
+      if (resultat.erreur == null) {
+        await ref.read(importServiceProvider).importerDonneesDuSite();
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            resultat.erreur != null
+                ? 'Corrigé localement — sync différée (${resultat.erreur})'
+                : 'Élève corrigé et synchronisé',
+          ),
+        ),
+      );
+      Navigator.of(context).pop();
+      return;
+    }
+
     try {
       await ref
           .read(dioProvider)
           .patch(
             '/eleves/${widget.eleve.idServeur}',
             data: {
-              'matricule': _matriculeController.text.trim(),
               'prenom': _prenomController.text.trim(),
               'nom': _nomController.text.trim(),
               'date_naissance': _dateNaissance
@@ -136,15 +166,13 @@ class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _matriculeController,
-              decoration: const InputDecoration(
-                labelText: 'Matricule',
-                border: OutlineInputBorder(),
+            if (!_estEnAttente) ...[
+              Text(
+                'Matricule : ${widget.eleve.matricule}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
-              validator: _obligatoire,
-            ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
+            ],
             Row(
               children: [
                 Expanded(
