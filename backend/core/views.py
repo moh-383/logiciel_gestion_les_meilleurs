@@ -1,8 +1,16 @@
+
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .models import Permission, Poste, Site
 from .permissions import ALaPermissionMetier
-from .serializers import PermissionSerializer, PosteSerializer, SiteSerializer
+from .serializers import (
+    PermissionSerializer,
+    PosteAssignerPermissionsSerializer,
+    PosteSerializer,
+    SiteSerializer,
+)
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -18,6 +26,26 @@ class PosteViewSet(viewsets.ModelViewSet):
     permission_classes = (ALaPermissionMetier,)
     permission_metier = "gerer_comptes"
 
+    @action(detail=True, methods=["put"], url_path="permissions")
+    def definir_permissions(self, request, pk=None):
+        """
+        Remplace intégralement les permissions associées au poste.
+        """
+        poste = self.get_object()
+
+        serializer = PosteAssignerPermissionsSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+
+        poste.permissions.set(
+            serializer.validated_data["permissions"]
+        )
+
+        return Response(
+            PosteSerializer(poste).data
+        )
+
 
 class SiteViewSet(viewsets.ModelViewSet):
     serializer_class = SiteSerializer
@@ -30,5 +58,10 @@ class SiteViewSet(viewsets.ModelViewSet):
         return Site.objects.filter(pk=user.site_id).order_by("nom")
 
     def get_permissions(self):
-        self.permission_metier = "gerer_comptes" if self.request.method not in ("GET", "HEAD", "OPTIONS") else None
+        self.permission_metier = (
+            "gerer_comptes"
+            if self.request.method not in ("GET", "HEAD", "OPTIONS")
+            else None
+        )
         return super().get_permissions()
+

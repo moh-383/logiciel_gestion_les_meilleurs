@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 
 from .models import Permission, Poste, Site
@@ -10,11 +11,31 @@ class PermissionSerializer(serializers.ModelSerializer):
 
 
 class PosteSerializer(serializers.ModelSerializer):
-    permissions = serializers.SlugRelatedField(many=True, slug_field="code", queryset=Permission.objects.all(), required=False)
+    permissions = serializers.SlugRelatedField(
+        many=True,
+        slug_field="code",
+        read_only=True
+    )
 
     class Meta:
         model = Poste
         fields = ("id", "nom", "tous_sites", "permissions")
+
+
+class PosteAssignerPermissionsSerializer(serializers.Serializer):
+    """
+    Serializer utilisé exclusivement pour l'endpoint :
+    PUT /postes/{id}/permissions
+
+    La liste fournie remplace intégralement les permissions
+    actuellement associées au poste.
+    """
+
+    permissions = serializers.SlugRelatedField(
+        many=True,
+        slug_field="code",
+        queryset=Permission.objects.all()
+    )
 
 
 class SiteSerializer(serializers.ModelSerializer):
@@ -22,3 +43,4 @@ class SiteSerializer(serializers.ModelSerializer):
         model = Site
         fields = ("id", "nom", "adresse", "capacite", "responsable")
         read_only_fields = ("id",)
+
