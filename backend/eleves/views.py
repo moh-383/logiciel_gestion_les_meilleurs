@@ -5,6 +5,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.models import Site
 from core.permissions import ALaPermissionMetier, dans_perimetre
 from .models import ContactParent, Echeance, Eleve
 from .serializers import (
@@ -227,3 +228,28 @@ class EcheancesEleveView(generics.ListAPIView):
             )
 
         return eleve.echeances.order_by("date_echeance")
+
+
+class EcheancesSiteView(generics.ListAPIView):
+    """
+    Bulk échéances pour un site entier — évite au mobile de faire un
+    appel par élève lors de l'import initial (import_service.dart).
+    Même contrôle de périmètre que le reste de l'API : un utilisateur
+    sans `tous_sites` ne peut lire que son propre site.
+    """
+
+    serializer_class = EcheanceSerializer
+    permission_classes = (ALaPermissionMetier,)
+
+    def get_queryset(self):
+        site = Site.objects.get(pk=self.kwargs["pk"])
+
+        if not dans_perimetre(self.request.user, site.id):
+            raise PermissionDenied("Site hors de votre périmètre.")
+
+        return (
+            Echeance.objects
+            .filter(eleve__site=site)
+            .select_related("eleve")
+            .order_by("eleve__nom", "eleve__prenom", "date_echeance")
+        )
