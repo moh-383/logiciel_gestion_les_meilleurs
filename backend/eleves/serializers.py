@@ -152,3 +152,16 @@ class EcheanceSerializer(serializers.ModelSerializer):
             "statut",
         )
         read_only_fields = ("id", "statut")
+
+
+class EcheanceCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Echeance
+        fields = (
+            "id",
+            "eleve",
+            "montant_du",
+            "date_echeance",
+            "statut",
+        )
+        read_only_fields = ("id", "eleve", "statut")

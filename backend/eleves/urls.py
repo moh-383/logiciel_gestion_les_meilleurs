@@ -5,6 +5,7 @@ from .views import (
     ContactViewSet,
     ContactsEleveView,
     EcheancesEleveView,
+    EcheancesSiteView,
     EleveSyncView,
     EleveViewSet,
 )
@@ -15,4 +16,5 @@ urlpatterns = [
     path("eleves/<uuid:pk>/contacts", ContactsEleveView.as_view()),
     path("sync/eleves", EleveSyncView.as_view()),
     path("eleves/<uuid:pk>/echeances", EcheancesEleveView.as_view()),
+    path("sites/<uuid:pk>/echeances", EcheancesSiteView.as_view()),
 ] + router.urls

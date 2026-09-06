@@ -216,6 +216,81 @@ class EleveApiTests(APITestCase):
             "erreur",
         )
 
+    def test_creation_echeance_depuis_un_eleve_du_site(self):
+        eleve = Eleve.objects.create(
+            matricule="ELV-ECHEANCE-001",
+            nom="Kaboré",
+            prenom="Adama",
+            sexe="M",
+            site=self.site,
+            classe="3ème B",
+            type_cours="renforcement_regulier",
+        )
+
+        response = self.client.post(
+            f"/api/v1/eleves/{eleve.id}/echeances",
+            {
+                "montant_du": 15000,
+                "date_echeance": "2026-09-15",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(str(response.data["eleve"]), str(eleve.id))
+        self.assertEqual(response.data["statut"], "a_jour")
+        self.assertTrue(
+            Echeance.objects.filter(
+                eleve=eleve,
+                montant_du=15000,
+                date_echeance="2026-09-15",
+            ).exists()
+        )
+
+    def test_creation_echeance_hors_site_est_refusee(self):
+        eleve = Eleve.objects.create(
+            matricule="ELV-ECHEANCE-002",
+            nom="Traoré",
+            prenom="Issa",
+            sexe="M",
+            site=self.autre_site,
+            classe="Terminale",
+            type_cours="renforcement_regulier",
+        )
+
+        response = self.client.post(
+            f"/api/v1/eleves/{eleve.id}/echeances",
+            {
+                "montant_du": 12000,
+                "date_echeance": "2026-09-15",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_liste_echeances_du_site_est_accessible_par_import_mobile(self):
+        eleve = Eleve.objects.create(
+            matricule="ELV-ECHEANCE-003",
+            nom="Sawadogo",
+            prenom="Boureima",
+            sexe="M",
+            site=self.site,
+            classe="2nde C",
+            type_cours="renforcement_regulier",
+        )
+        Echeance.objects.create(
+            eleve=eleve,
+            montant_du=250000,
+            date_echeance="2026-09-20",
+        )
+
+        response = self.client.get(f"/api/v1/sites/{self.site.id}/echeances")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["total"], 1)
+        self.assertEqual(response.data["data"][0]["eleve"], eleve.id)
+
 
 class EleveResumeFinancierApiTests(APITestCase):
     """Résumé financier intégré à la fiche élève."""

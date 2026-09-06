@@ -136,7 +136,28 @@ Ce document fixe les endpoints du backend pour le MVP (Élèves & Inscriptions, 
 
 ---
 
-## 6. Synchronisation hors-ligne (app mobile) : *Personne B*
+## 6. Échéances et synchronisation hors-ligne
+
+La création d'une échéance se fait dans le périmètre de l'élève :
+
+| Méthode | Endpoint | Permission requise | Description |
+|---|---|---|---|
+| GET | `/eleves/{id}/echeances` | Authentification + périmètre site | Liste les échéances de l'élève |
+| POST | `/eleves/{id}/echeances` | `gerer_eleves` + périmètre site | Crée une échéance pour l'élève |
+
+**Exemple requête** :
+```json
+{
+  "montant_du": 15000,
+  "date_echeance": "2026-09-15"
+}
+```
+
+Le champ `statut` est initialisé à `a_jour` par le serveur et l'élève est
+déduit de l'URL ; le client ne peut donc pas créer une échéance dans un autre
+site.
+
+## 7. Synchronisation hors-ligne (app mobile) : *Personne B*
 
 L'app mobile stocke localement les paiements créés sans connexion. Dès que la connexion revient :
 

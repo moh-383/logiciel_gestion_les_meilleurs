@@ -7,6 +7,7 @@ import '../../core/sync_service.dart';
 import 'encaissement_form_screen.dart';
 import 'paiement_historique_screen.dart';
 import 'demandes_validation_screen.dart';
+import '../eleves/eleves_list_screen.dart';
 
 /// Instance unique de la base locale, partagée par toute l'app.
 /// (Sera injectée plus proprement plus tard si besoin de mock pour les tests.)
@@ -43,6 +44,15 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
       appBar: AppBar(
         title: const Text('Paiements'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.groups_outlined),
+            tooltip: 'Élèves',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ElevesListScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.pending_actions),
             tooltip: 'Demandes de validation',

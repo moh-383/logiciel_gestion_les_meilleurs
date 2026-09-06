@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/features/eleves/providers/eleve_providers.dart';
 
 import '../../core/auth_service.dart';
 import '../../core/import_service.dart';
@@ -31,7 +33,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _chargement = true);
     try {
-      await ref.read(authServiceProvider).login(
+      await ref
+          .read(authServiceProvider)
+          .login(
             telephone: _telephoneController.text.trim(),
             motDePasse: _motDePasseController.text,
           );
@@ -41,13 +45,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // juste après le login) — l'écran liste reste utilisable et
       // l'import sera retenté à la prochaine reconnexion détectée.
       unawaited(ref.read(importServiceProvider).importerDonneesDuSite());
+      unawaited(ref.read(eleveSyncServiceProvider).synchroniser());
     } on DioException catch (error) {
       final data = error.response?.data;
       final message = data is Map && data['message'] is String
           ? data['message'] as String
           : 'Connexion impossible. Vérifie le serveur et le réseau.';
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
       }
     } finally {
       if (mounted) setState(() => _chargement = false);
@@ -68,17 +74,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(Icons.school, size: 56, color: Theme.of(context).colorScheme.primary),
+                    Icon(
+                      Icons.school,
+                      size: 56,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     const SizedBox(height: 16),
-                    Text('Cours d\'appui les meilleurs', textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall),
+                    Text(
+                      'Cours d\'appui les meilleurs',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                     const SizedBox(height: 8),
-                    const Text('Connectez-vous pour synchroniser les paiements.', textAlign: TextAlign.center),
+                    const Text(
+                      'Connectez-vous pour synchroniser les paiements.',
+                      textAlign: TextAlign.center,
+                    ),
                     const SizedBox(height: 32),
                     TextFormField(
                       controller: _telephoneController,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(labelText: 'Téléphone', prefixIcon: Icon(Icons.phone), border: OutlineInputBorder()),
-                      validator: (value) => value == null || value.trim().isEmpty ? 'Le téléphone est obligatoire.' : null,
+                      decoration: const InputDecoration(
+                        labelText: 'Téléphone',
+                        prefixIcon: Icon(Icons.phone),
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) =>
+                          value == null || value.trim().isEmpty
+                          ? 'Le téléphone est obligatoire.'
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -89,18 +113,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         prefixIcon: const Icon(Icons.lock),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
-                          icon: Icon(_masquerMotDePasse ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () => setState(() => _masquerMotDePasse = !_masquerMotDePasse),
+                          icon: Icon(
+                            _masquerMotDePasse
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () => setState(
+                            () => _masquerMotDePasse = !_masquerMotDePasse,
+                          ),
                         ),
                       ),
-                      validator: (value) => value == null || value.isEmpty ? 'Le mot de passe est obligatoire.' : null,
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Le mot de passe est obligatoire.'
+                          : null,
                       onFieldSubmitted: (_) => _connexion(),
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
                       onPressed: _chargement ? null : _connexion,
                       child: _chargement
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Text('Se connecter'),
                     ),
                   ],

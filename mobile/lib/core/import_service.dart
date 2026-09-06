@@ -13,7 +13,11 @@ class ResultatImport {
   final int nbEcheances;
   final String? erreur;
 
-  ResultatImport({required this.nbEleves, required this.nbEcheances, this.erreur});
+  ResultatImport({
+    required this.nbEleves,
+    required this.nbEcheances,
+    this.erreur,
+  });
 
   bool get succes => erreur == null;
 }
@@ -30,13 +34,21 @@ class ImportService {
   final Dio dio;
   final TokenStore tokenStore;
 
-  ImportService({required this.db, required this.dio, required this.tokenStore});
+  ImportService({
+    required this.db,
+    required this.dio,
+    required this.tokenStore,
+  });
 
   Future<ResultatImport> importerDonneesDuSite() async {
     try {
       final session = await tokenStore.readSession();
       if (session == null) {
-        return ResultatImport(nbEleves: 0, nbEcheances: 0, erreur: 'Non connecté.');
+        return ResultatImport(
+          nbEleves: 0,
+          nbEcheances: 0,
+          erreur: 'Non connecté.',
+        );
       }
       final siteId = session.siteId;
       if (siteId == null) {
@@ -51,9 +63,16 @@ class ImportService {
       final echeances = await _recupererEcheancesDuSite(siteId);
       await db.upsertEcheances(echeances);
 
-      return ResultatImport(nbEleves: eleves.length, nbEcheances: echeances.length);
+      return ResultatImport(
+        nbEleves: eleves.length,
+        nbEcheances: echeances.length,
+      );
     } on DioException catch (e) {
-      return ResultatImport(nbEleves: 0, nbEcheances: 0, erreur: _messageErreur(e));
+      return ResultatImport(
+        nbEleves: 0,
+        nbEcheances: 0,
+        erreur: _messageErreur(e),
+      );
     }
   }
 
@@ -62,19 +81,32 @@ class ImportService {
     int page = 1;
     const limit = 100;
     while (true) {
-      final reponse = await dio.get('/eleves', queryParameters: {'page': page, 'limit': limit});
+      final reponse = await dio.get(
+        '/eleves',
+        queryParameters: {'page': page, 'limit': limit},
+      );
       final data = reponse.data as Map;
       final items = (data['data'] as List).cast<Map>();
 
       for (final item in items) {
-        resultats.add(ElevesCompanion.insert(
-          id: item['id'] as String,
-          matricule: Value((item['matricule'] as String?) ?? ''),
-          nom: item['nom'] as String,
-          prenom: item['prenom'] as String,
-          classe: item['classe'] as String,
-          siteId: item['site_id'] as String,
-        ));
+        resultats.add(
+          ElevesCompanion.insert(
+            id: item['id'] as String,
+            matricule: Value((item['matricule'] as String?) ?? ''),
+            nom: item['nom'] as String,
+            prenom: item['prenom'] as String,
+            classe: item['classe'] as String,
+            siteId: item['site_id'] as String,
+            dateNaissance: Value(
+              item['date_naissance'] != null
+                  ? DateTime.parse(item['date_naissance'] as String)
+                  : null,
+            ),
+            sexe: Value((item['sexe'] as String?) ?? ''),
+            typeCours: Value((item['type_cours'] as String?) ?? ''),
+            statut: Value((item['statut'] as String?) ?? 'actif'),
+          ),
+        );
       }
 
       final total = data['total'] as int;
@@ -84,7 +116,9 @@ class ImportService {
     return resultats;
   }
 
-  Future<List<EcheancesCompanion>> _recupererEcheancesDuSite(String siteId) async {
+  Future<List<EcheancesCompanion>> _recupererEcheancesDuSite(
+    String siteId,
+  ) async {
     final resultats = <EcheancesCompanion>[];
     int page = 1;
     const limit = 200;
@@ -97,13 +131,15 @@ class ImportService {
       final items = (data['data'] as List).cast<Map>();
 
       for (final item in items) {
-        resultats.add(EcheancesCompanion.insert(
-          id: item['id'] as String,
-          eleveId: item['eleve'] as String,
-          montantDu: double.parse(item['montant_du'].toString()),
-          dateEcheance: DateTime.parse(item['date_echeance'] as String),
-          statut: item['statut'] as String,
-        ));
+        resultats.add(
+          EcheancesCompanion.insert(
+            id: item['id'] as String,
+            eleveId: item['eleve'] as String,
+            montantDu: double.parse(item['montant_du'].toString()),
+            dateEcheance: DateTime.parse(item['date_echeance'] as String),
+            statut: item['statut'] as String,
+          ),
+        );
       }
 
       final total = data['total'] as int;
@@ -115,7 +151,9 @@ class ImportService {
 
   String _messageErreur(DioException erreur) {
     final data = erreur.response?.data;
-    if (data is Map && data['message'] is String) return data['message'] as String;
+    if (data is Map && data['message'] is String) {
+      return data['message'] as String;
+    }
     return erreur.message ?? "Import impossible : serveur inaccessible.";
   }
 }

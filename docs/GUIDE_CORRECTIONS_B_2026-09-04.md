@@ -115,7 +115,7 @@ git push origin <ta-branche>
 ```
 
 Puis ouvre une PR vers `dev`. **Préviens A explicitement** parce que
-`sync_service.dart` touche au contrat `/sync/paiements` (champ `note`) — même
+`sync_service.dart` touche au contrat `/sync/paiements` (champ `note`), même
 si le contrat n'a pas changé, la revue croisée est la règle du projet dès
 qu'on touche à une zone partagée (cf. `CONTRIBUTING.md`).
 

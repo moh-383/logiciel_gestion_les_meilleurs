@@ -11,6 +11,7 @@ from .models import ContactParent, Echeance, Eleve
 from .serializers import (
     ContactParentSerializer,
     EcheanceSerializer,
+    EcheanceCreateSerializer,
     EleveDetailSerializer,
     EleveSerializer,
     EleveSyncSerializer,
@@ -213,21 +214,36 @@ class ContactsEleveView(generics.ListCreateAPIView):
         serializer.save(eleve=self.get_eleve())
 
 
-class EcheancesEleveView(generics.ListAPIView):
+class EcheancesEleveView(generics.ListCreateAPIView):
     serializer_class = EcheanceSerializer
+    permission_classes = (ALaPermissionMetier,)
 
-    def get_queryset(self):
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return EcheanceCreateSerializer
+        return super().get_serializer_class()
+
+    def get_permissions(self):
+        self.permission_metier = (
+            "gerer_eleves"
+            if self.request.method == "POST"
+            else None
+        )
+        return super().get_permissions()
+
+    def get_eleve(self):
         eleve = Eleve.objects.get(pk=self.kwargs["pk"])
 
-        if not dans_perimetre(
-            self.request.user,
-            eleve.site_id
-        ):
-            raise PermissionDenied(
-                "Élève hors de votre périmètre."
-            )
+        if not dans_perimetre(self.request.user, eleve.site_id):
+            raise PermissionDenied("Élève hors de votre périmètre.")
 
-        return eleve.echeances.order_by("date_echeance")
+        return eleve
+
+    def get_queryset(self):
+        return self.get_eleve().echeances.order_by("date_echeance")
+
+    def perform_create(self, serializer):
+        serializer.save(eleve=self.get_eleve())
 
 
 class EcheancesSiteView(generics.ListAPIView):

@@ -13,6 +13,7 @@ part 'database.g.dart';
 /// Modèle d'affichage : une échéance combinée à l'élève concerné
 /// et au solde déjà réglé, calculé à partir des paiements locaux.
 class EcheanceAvecSolde {
+  final String eleveId;
   final String echeanceId;
   final String eleveNom;
   final String matricule;
@@ -23,6 +24,7 @@ class EcheanceAvecSolde {
   final int joursRetard;
 
   EcheanceAvecSolde({
+    required this.eleveId,
     required this.echeanceId,
     required this.eleveNom,
     required this.matricule,
@@ -36,10 +38,8 @@ class EcheanceAvecSolde {
 
 /// Vérifie si une colonne existe réellement dans le fichier SQLite, avant
 /// de tenter un `ALTER TABLE ... ADD COLUMN`. Sans ce garde-fou, un appareil
-/// dont la base a déjà reçu la colonne par un autre chemin (ex. une build
-/// antérieure qui la créait directement dans le schéma, avant l'ajout du
-/// bloc de migration explicite) plante avec `duplicate column name` au
-/// démarrage — bug rencontré et corrigé le 2026-09-05 sur la colonne `note`.
+/// dont la base a déjà reçu la colonne par un autre chemin plante avec
+/// `duplicate column name` au démarrage (bug rencontré sur `note`, v5).
 Future<bool> _colonneExiste(
   GeneratedDatabase db,
   String table,
@@ -49,7 +49,9 @@ Future<bool> _colonneExiste(
   return lignes.any((row) => row.data['name'] == colonne);
 }
 
-@DriftDatabase(tables: [Eleves, Echeances, Paiements, DemandesValidation])
+@DriftDatabase(
+  tables: [Eleves, Echeances, Paiements, DemandesValidation, ElevesEnAttente],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -60,7 +62,8 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion =>
-      5; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison · v5 : note
+      7; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison
+      // v5 : note · v6 : cache élèves enrichi · v7 : file d'attente élèves
 
   @override
   MigrationStrategy get migration {
@@ -83,6 +86,23 @@ class AppDatabase extends _$AppDatabase {
           if (!await _colonneExiste(this, 'paiements', 'note')) {
             await m.addColumn(paiements, paiements.note);
           }
+        }
+        if (from < 6) {
+          if (!await _colonneExiste(this, 'eleves', 'date_naissance')) {
+            await m.addColumn(eleves, eleves.dateNaissance);
+          }
+          if (!await _colonneExiste(this, 'eleves', 'sexe')) {
+            await m.addColumn(eleves, eleves.sexe);
+          }
+          if (!await _colonneExiste(this, 'eleves', 'type_cours')) {
+            await m.addColumn(eleves, eleves.typeCours);
+          }
+          if (!await _colonneExiste(this, 'eleves', 'statut')) {
+            await m.addColumn(eleves, eleves.statut);
+          }
+        }
+        if (from < 7) {
+          await m.createTable(elevesEnAttente);
         }
       },
     );
@@ -118,7 +138,7 @@ class AppDatabase extends _$AppDatabase {
 
         String statut;
         if (restant < 0) {
-          statut = 'avance'; // le parent a payé plus que ce qui était dû
+          statut = 'avance';
         } else if (restant == 0) {
           statut = 'solde';
         } else if (paye > 0) {
@@ -126,10 +146,11 @@ class AppDatabase extends _$AppDatabase {
         } else if (joursRetard > 0) {
           statut = 'en_retard';
         } else {
-          statut = 'solde'; // échéance future, pas encore due, rien payé
+          statut = 'solde';
         }
 
         return EcheanceAvecSolde(
+          eleveId: eleve.id,
           echeanceId: echeance.id,
           eleveNom: '${eleve.prenom} ${eleve.nom}',
           matricule: eleve.matricule,
@@ -143,8 +164,6 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  /// Liste des paiements enregistrés pour une échéance donnée,
-  /// avec le statut de demande d'annulation en cours s'il y en a une.
   Stream<List<PaiementAvecDemande>> watchPaiementsDeLEcheance(
     String echeanceId,
   ) {
@@ -173,9 +192,6 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  /// Soumet une demande d'annulation pour un paiement — n'annule rien
-  /// directement, le paiement reste valide jusqu'à validation du
-  /// responsable de site (voir docs/schema-bdd.md, DEMANDE_VALIDATION).
   Future<void> demanderAnnulationPaiement({
     required String paiementClientUuid,
     required String motif,
@@ -190,8 +206,6 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  /// Flux des demandes en attente, avec le paiement concerné —
-  /// destiné à l'écran de validation (responsable de site).
   Stream<List<DemandeAvecPaiement>> watchDemandesEnAttente() {
     final query =
         select(demandesValidation).join([
@@ -217,8 +231,6 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  /// Approuve ou rejette une demande. En cas d'approbation, le paiement
-  /// concerné passe au statut "annule" et sort du calcul des soldes.
   Future<void> traiterDemande({
     required String demandeClientUuid,
     required bool approuver,
@@ -242,19 +254,15 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  /// Paiements pas encore confirmés par le serveur — ceux qu'il faut
-  /// envoyer lors de la prochaine synchronisation.
   Future<List<Paiement>> paiementsEnAttenteDeSync() {
     return (select(
       paiements,
     )..where((p) => p.syncStatus.equals('en_attente'))).get();
   }
 
-  /// Applique le résultat de /sync/paiements renvoyé par le serveur
-  /// à un paiement local donné (voir docs/api-contract.md, §6).
   Future<void> appliquerResultatSync({
     required String clientUuid,
-    required String statut, // 'cree' ou 'conflit'
+    required String statut,
     String? paiementIdServeur,
     String? raison,
   }) async {
@@ -269,8 +277,6 @@ class AppDatabase extends _$AppDatabase {
         ),
       );
     } else {
-      // 'conflit' : le paiement reste en local, visible pour arbitrage
-      // manuel — on ne le supprime jamais silencieusement.
       await (update(
         paiements,
       )..where((p) => p.clientUuid.equals(clientUuid))).write(
@@ -282,8 +288,6 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  /// Nombre de paiements pas encore synchronisés (en attente + en conflit)
-  /// — sert au badge affiché en haut de la liste.
   Stream<int> watchNbPaiementsNonSynchronises() {
     final query = selectOnly(paiements)
       ..addColumns([paiements.clientUuid.count()])
@@ -294,9 +298,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Importe (upsert) les élèves reçus du backend. Ne supprime jamais un
-  /// élève local absent de la réponse : un élève transféré/désactivé
-  /// côté serveur ne doit pas faire disparaître silencieusement son
-  /// historique de paiements déjà synchronisé sur l'appareil.
+  /// élève local absent de la réponse.
   Future<void> upsertEleves(List<ElevesCompanion> liste) async {
     if (liste.isEmpty) return;
     await batch((b) {
@@ -304,7 +306,6 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  /// Idem pour les échéances.
   Future<void> upsertEcheances(List<EcheancesCompanion> liste) async {
     if (liste.isEmpty) return;
     await batch((b) {

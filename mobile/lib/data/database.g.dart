@@ -65,6 +65,50 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _dateNaissanceMeta = const VerificationMeta(
+    'dateNaissance',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dateNaissance =
+      GeneratedColumn<DateTime>(
+        'date_naissance',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _sexeMeta = const VerificationMeta('sexe');
+  @override
+  late final GeneratedColumn<String> sexe = GeneratedColumn<String>(
+    'sexe',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _typeCoursMeta = const VerificationMeta(
+    'typeCours',
+  );
+  @override
+  late final GeneratedColumn<String> typeCours = GeneratedColumn<String>(
+    'type_cours',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _statutMeta = const VerificationMeta('statut');
+  @override
+  late final GeneratedColumn<String> statut = GeneratedColumn<String>(
+    'statut',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('actif'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -73,6 +117,10 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
     prenom,
     classe,
     siteId,
+    dateNaissance,
+    sexe,
+    typeCours,
+    statut,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -129,6 +177,33 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
     } else if (isInserting) {
       context.missing(_siteIdMeta);
     }
+    if (data.containsKey('date_naissance')) {
+      context.handle(
+        _dateNaissanceMeta,
+        dateNaissance.isAcceptableOrUnknown(
+          data['date_naissance']!,
+          _dateNaissanceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sexe')) {
+      context.handle(
+        _sexeMeta,
+        sexe.isAcceptableOrUnknown(data['sexe']!, _sexeMeta),
+      );
+    }
+    if (data.containsKey('type_cours')) {
+      context.handle(
+        _typeCoursMeta,
+        typeCours.isAcceptableOrUnknown(data['type_cours']!, _typeCoursMeta),
+      );
+    }
+    if (data.containsKey('statut')) {
+      context.handle(
+        _statutMeta,
+        statut.isAcceptableOrUnknown(data['statut']!, _statutMeta),
+      );
+    }
     return context;
   }
 
@@ -162,6 +237,22 @@ class $ElevesTable extends Eleves with TableInfo<$ElevesTable, Eleve> {
         DriftSqlType.string,
         data['${effectivePrefix}site_id'],
       )!,
+      dateNaissance: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_naissance'],
+      ),
+      sexe: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sexe'],
+      )!,
+      typeCours: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type_cours'],
+      )!,
+      statut: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}statut'],
+      )!,
     );
   }
 
@@ -178,6 +269,10 @@ class Eleve extends DataClass implements Insertable<Eleve> {
   final String prenom;
   final String classe;
   final String siteId;
+  final DateTime? dateNaissance;
+  final String sexe;
+  final String typeCours;
+  final String statut;
   const Eleve({
     required this.id,
     required this.matricule,
@@ -185,6 +280,10 @@ class Eleve extends DataClass implements Insertable<Eleve> {
     required this.prenom,
     required this.classe,
     required this.siteId,
+    this.dateNaissance,
+    required this.sexe,
+    required this.typeCours,
+    required this.statut,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -195,6 +294,12 @@ class Eleve extends DataClass implements Insertable<Eleve> {
     map['prenom'] = Variable<String>(prenom);
     map['classe'] = Variable<String>(classe);
     map['site_id'] = Variable<String>(siteId);
+    if (!nullToAbsent || dateNaissance != null) {
+      map['date_naissance'] = Variable<DateTime>(dateNaissance);
+    }
+    map['sexe'] = Variable<String>(sexe);
+    map['type_cours'] = Variable<String>(typeCours);
+    map['statut'] = Variable<String>(statut);
     return map;
   }
 
@@ -206,6 +311,12 @@ class Eleve extends DataClass implements Insertable<Eleve> {
       prenom: Value(prenom),
       classe: Value(classe),
       siteId: Value(siteId),
+      dateNaissance: dateNaissance == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dateNaissance),
+      sexe: Value(sexe),
+      typeCours: Value(typeCours),
+      statut: Value(statut),
     );
   }
 
@@ -221,6 +332,10 @@ class Eleve extends DataClass implements Insertable<Eleve> {
       prenom: serializer.fromJson<String>(json['prenom']),
       classe: serializer.fromJson<String>(json['classe']),
       siteId: serializer.fromJson<String>(json['siteId']),
+      dateNaissance: serializer.fromJson<DateTime?>(json['dateNaissance']),
+      sexe: serializer.fromJson<String>(json['sexe']),
+      typeCours: serializer.fromJson<String>(json['typeCours']),
+      statut: serializer.fromJson<String>(json['statut']),
     );
   }
   @override
@@ -233,6 +348,10 @@ class Eleve extends DataClass implements Insertable<Eleve> {
       'prenom': serializer.toJson<String>(prenom),
       'classe': serializer.toJson<String>(classe),
       'siteId': serializer.toJson<String>(siteId),
+      'dateNaissance': serializer.toJson<DateTime?>(dateNaissance),
+      'sexe': serializer.toJson<String>(sexe),
+      'typeCours': serializer.toJson<String>(typeCours),
+      'statut': serializer.toJson<String>(statut),
     };
   }
 
@@ -243,6 +362,10 @@ class Eleve extends DataClass implements Insertable<Eleve> {
     String? prenom,
     String? classe,
     String? siteId,
+    Value<DateTime?> dateNaissance = const Value.absent(),
+    String? sexe,
+    String? typeCours,
+    String? statut,
   }) => Eleve(
     id: id ?? this.id,
     matricule: matricule ?? this.matricule,
@@ -250,6 +373,12 @@ class Eleve extends DataClass implements Insertable<Eleve> {
     prenom: prenom ?? this.prenom,
     classe: classe ?? this.classe,
     siteId: siteId ?? this.siteId,
+    dateNaissance: dateNaissance.present
+        ? dateNaissance.value
+        : this.dateNaissance,
+    sexe: sexe ?? this.sexe,
+    typeCours: typeCours ?? this.typeCours,
+    statut: statut ?? this.statut,
   );
   Eleve copyWithCompanion(ElevesCompanion data) {
     return Eleve(
@@ -259,6 +388,12 @@ class Eleve extends DataClass implements Insertable<Eleve> {
       prenom: data.prenom.present ? data.prenom.value : this.prenom,
       classe: data.classe.present ? data.classe.value : this.classe,
       siteId: data.siteId.present ? data.siteId.value : this.siteId,
+      dateNaissance: data.dateNaissance.present
+          ? data.dateNaissance.value
+          : this.dateNaissance,
+      sexe: data.sexe.present ? data.sexe.value : this.sexe,
+      typeCours: data.typeCours.present ? data.typeCours.value : this.typeCours,
+      statut: data.statut.present ? data.statut.value : this.statut,
     );
   }
 
@@ -270,13 +405,28 @@ class Eleve extends DataClass implements Insertable<Eleve> {
           ..write('nom: $nom, ')
           ..write('prenom: $prenom, ')
           ..write('classe: $classe, ')
-          ..write('siteId: $siteId')
+          ..write('siteId: $siteId, ')
+          ..write('dateNaissance: $dateNaissance, ')
+          ..write('sexe: $sexe, ')
+          ..write('typeCours: $typeCours, ')
+          ..write('statut: $statut')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, matricule, nom, prenom, classe, siteId);
+  int get hashCode => Object.hash(
+    id,
+    matricule,
+    nom,
+    prenom,
+    classe,
+    siteId,
+    dateNaissance,
+    sexe,
+    typeCours,
+    statut,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -286,7 +436,11 @@ class Eleve extends DataClass implements Insertable<Eleve> {
           other.nom == this.nom &&
           other.prenom == this.prenom &&
           other.classe == this.classe &&
-          other.siteId == this.siteId);
+          other.siteId == this.siteId &&
+          other.dateNaissance == this.dateNaissance &&
+          other.sexe == this.sexe &&
+          other.typeCours == this.typeCours &&
+          other.statut == this.statut);
 }
 
 class ElevesCompanion extends UpdateCompanion<Eleve> {
@@ -296,6 +450,10 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
   final Value<String> prenom;
   final Value<String> classe;
   final Value<String> siteId;
+  final Value<DateTime?> dateNaissance;
+  final Value<String> sexe;
+  final Value<String> typeCours;
+  final Value<String> statut;
   final Value<int> rowid;
   const ElevesCompanion({
     this.id = const Value.absent(),
@@ -304,6 +462,10 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
     this.prenom = const Value.absent(),
     this.classe = const Value.absent(),
     this.siteId = const Value.absent(),
+    this.dateNaissance = const Value.absent(),
+    this.sexe = const Value.absent(),
+    this.typeCours = const Value.absent(),
+    this.statut = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ElevesCompanion.insert({
@@ -313,6 +475,10 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
     required String prenom,
     required String classe,
     required String siteId,
+    this.dateNaissance = const Value.absent(),
+    this.sexe = const Value.absent(),
+    this.typeCours = const Value.absent(),
+    this.statut = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        nom = Value(nom),
@@ -326,6 +492,10 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
     Expression<String>? prenom,
     Expression<String>? classe,
     Expression<String>? siteId,
+    Expression<DateTime>? dateNaissance,
+    Expression<String>? sexe,
+    Expression<String>? typeCours,
+    Expression<String>? statut,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -335,6 +505,10 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
       if (prenom != null) 'prenom': prenom,
       if (classe != null) 'classe': classe,
       if (siteId != null) 'site_id': siteId,
+      if (dateNaissance != null) 'date_naissance': dateNaissance,
+      if (sexe != null) 'sexe': sexe,
+      if (typeCours != null) 'type_cours': typeCours,
+      if (statut != null) 'statut': statut,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -346,6 +520,10 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
     Value<String>? prenom,
     Value<String>? classe,
     Value<String>? siteId,
+    Value<DateTime?>? dateNaissance,
+    Value<String>? sexe,
+    Value<String>? typeCours,
+    Value<String>? statut,
     Value<int>? rowid,
   }) {
     return ElevesCompanion(
@@ -355,6 +533,10 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
       prenom: prenom ?? this.prenom,
       classe: classe ?? this.classe,
       siteId: siteId ?? this.siteId,
+      dateNaissance: dateNaissance ?? this.dateNaissance,
+      sexe: sexe ?? this.sexe,
+      typeCours: typeCours ?? this.typeCours,
+      statut: statut ?? this.statut,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -380,6 +562,18 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
     if (siteId.present) {
       map['site_id'] = Variable<String>(siteId.value);
     }
+    if (dateNaissance.present) {
+      map['date_naissance'] = Variable<DateTime>(dateNaissance.value);
+    }
+    if (sexe.present) {
+      map['sexe'] = Variable<String>(sexe.value);
+    }
+    if (typeCours.present) {
+      map['type_cours'] = Variable<String>(typeCours.value);
+    }
+    if (statut.present) {
+      map['statut'] = Variable<String>(statut.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -395,6 +589,10 @@ class ElevesCompanion extends UpdateCompanion<Eleve> {
           ..write('prenom: $prenom, ')
           ..write('classe: $classe, ')
           ..write('siteId: $siteId, ')
+          ..write('dateNaissance: $dateNaissance, ')
+          ..write('sexe: $sexe, ')
+          ..write('typeCours: $typeCours, ')
+          ..write('statut: $statut, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1854,6 +2052,932 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
   }
 }
 
+class $ElevesEnAttenteTable extends ElevesEnAttente
+    with TableInfo<$ElevesEnAttenteTable, EleveEnAttente> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ElevesEnAttenteTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _clientUuidMeta = const VerificationMeta(
+    'clientUuid',
+  );
+  @override
+  late final GeneratedColumn<String> clientUuid = GeneratedColumn<String>(
+    'client_uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _matriculeMeta = const VerificationMeta(
+    'matricule',
+  );
+  @override
+  late final GeneratedColumn<String> matricule = GeneratedColumn<String>(
+    'matricule',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nomMeta = const VerificationMeta('nom');
+  @override
+  late final GeneratedColumn<String> nom = GeneratedColumn<String>(
+    'nom',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _prenomMeta = const VerificationMeta('prenom');
+  @override
+  late final GeneratedColumn<String> prenom = GeneratedColumn<String>(
+    'prenom',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateNaissanceMeta = const VerificationMeta(
+    'dateNaissance',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dateNaissance =
+      GeneratedColumn<DateTime>(
+        'date_naissance',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _sexeMeta = const VerificationMeta('sexe');
+  @override
+  late final GeneratedColumn<String> sexe = GeneratedColumn<String>(
+    'sexe',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _siteIdMeta = const VerificationMeta('siteId');
+  @override
+  late final GeneratedColumn<String> siteId = GeneratedColumn<String>(
+    'site_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _classeMeta = const VerificationMeta('classe');
+  @override
+  late final GeneratedColumn<String> classe = GeneratedColumn<String>(
+    'classe',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeCoursMeta = const VerificationMeta(
+    'typeCours',
+  );
+  @override
+  late final GeneratedColumn<String> typeCours = GeneratedColumn<String>(
+    'type_cours',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contactNomMeta = const VerificationMeta(
+    'contactNom',
+  );
+  @override
+  late final GeneratedColumn<String> contactNom = GeneratedColumn<String>(
+    'contact_nom',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _contactTelephoneMeta = const VerificationMeta(
+    'contactTelephone',
+  );
+  @override
+  late final GeneratedColumn<String> contactTelephone = GeneratedColumn<String>(
+    'contact_telephone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _contactLienMeta = const VerificationMeta(
+    'contactLien',
+  );
+  @override
+  late final GeneratedColumn<String> contactLien = GeneratedColumn<String>(
+    'contact_lien',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en_attente'),
+  );
+  static const VerificationMeta _syncRaisonMeta = const VerificationMeta(
+    'syncRaison',
+  );
+  @override
+  late final GeneratedColumn<String> syncRaison = GeneratedColumn<String>(
+    'sync_raison',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dateCreationLocaleMeta =
+      const VerificationMeta('dateCreationLocale');
+  @override
+  late final GeneratedColumn<DateTime> dateCreationLocale =
+      GeneratedColumn<DateTime>(
+        'date_creation_locale',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    clientUuid,
+    matricule,
+    nom,
+    prenom,
+    dateNaissance,
+    sexe,
+    siteId,
+    classe,
+    typeCours,
+    contactNom,
+    contactTelephone,
+    contactLien,
+    syncStatus,
+    syncRaison,
+    dateCreationLocale,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'eleves_en_attente';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EleveEnAttente> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('client_uuid')) {
+      context.handle(
+        _clientUuidMeta,
+        clientUuid.isAcceptableOrUnknown(data['client_uuid']!, _clientUuidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientUuidMeta);
+    }
+    if (data.containsKey('matricule')) {
+      context.handle(
+        _matriculeMeta,
+        matricule.isAcceptableOrUnknown(data['matricule']!, _matriculeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_matriculeMeta);
+    }
+    if (data.containsKey('nom')) {
+      context.handle(
+        _nomMeta,
+        nom.isAcceptableOrUnknown(data['nom']!, _nomMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomMeta);
+    }
+    if (data.containsKey('prenom')) {
+      context.handle(
+        _prenomMeta,
+        prenom.isAcceptableOrUnknown(data['prenom']!, _prenomMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_prenomMeta);
+    }
+    if (data.containsKey('date_naissance')) {
+      context.handle(
+        _dateNaissanceMeta,
+        dateNaissance.isAcceptableOrUnknown(
+          data['date_naissance']!,
+          _dateNaissanceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sexe')) {
+      context.handle(
+        _sexeMeta,
+        sexe.isAcceptableOrUnknown(data['sexe']!, _sexeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sexeMeta);
+    }
+    if (data.containsKey('site_id')) {
+      context.handle(
+        _siteIdMeta,
+        siteId.isAcceptableOrUnknown(data['site_id']!, _siteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_siteIdMeta);
+    }
+    if (data.containsKey('classe')) {
+      context.handle(
+        _classeMeta,
+        classe.isAcceptableOrUnknown(data['classe']!, _classeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_classeMeta);
+    }
+    if (data.containsKey('type_cours')) {
+      context.handle(
+        _typeCoursMeta,
+        typeCours.isAcceptableOrUnknown(data['type_cours']!, _typeCoursMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeCoursMeta);
+    }
+    if (data.containsKey('contact_nom')) {
+      context.handle(
+        _contactNomMeta,
+        contactNom.isAcceptableOrUnknown(data['contact_nom']!, _contactNomMeta),
+      );
+    }
+    if (data.containsKey('contact_telephone')) {
+      context.handle(
+        _contactTelephoneMeta,
+        contactTelephone.isAcceptableOrUnknown(
+          data['contact_telephone']!,
+          _contactTelephoneMeta,
+        ),
+      );
+    }
+    if (data.containsKey('contact_lien')) {
+      context.handle(
+        _contactLienMeta,
+        contactLien.isAcceptableOrUnknown(
+          data['contact_lien']!,
+          _contactLienMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('sync_raison')) {
+      context.handle(
+        _syncRaisonMeta,
+        syncRaison.isAcceptableOrUnknown(data['sync_raison']!, _syncRaisonMeta),
+      );
+    }
+    if (data.containsKey('date_creation_locale')) {
+      context.handle(
+        _dateCreationLocaleMeta,
+        dateCreationLocale.isAcceptableOrUnknown(
+          data['date_creation_locale']!,
+          _dateCreationLocaleMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dateCreationLocaleMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientUuid};
+  @override
+  EleveEnAttente map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EleveEnAttente(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      ),
+      clientUuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_uuid'],
+      )!,
+      matricule: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}matricule'],
+      )!,
+      nom: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nom'],
+      )!,
+      prenom: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}prenom'],
+      )!,
+      dateNaissance: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_naissance'],
+      ),
+      sexe: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sexe'],
+      )!,
+      siteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}site_id'],
+      )!,
+      classe: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}classe'],
+      )!,
+      typeCours: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type_cours'],
+      )!,
+      contactNom: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contact_nom'],
+      ),
+      contactTelephone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contact_telephone'],
+      ),
+      contactLien: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contact_lien'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      syncRaison: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_raison'],
+      ),
+      dateCreationLocale: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_creation_locale'],
+      )!,
+    );
+  }
+
+  @override
+  $ElevesEnAttenteTable createAlias(String alias) {
+    return $ElevesEnAttenteTable(attachedDatabase, alias);
+  }
+}
+
+class EleveEnAttente extends DataClass implements Insertable<EleveEnAttente> {
+  final String? id;
+  final String clientUuid;
+  final String matricule;
+  final String nom;
+  final String prenom;
+  final DateTime? dateNaissance;
+  final String sexe;
+  final String siteId;
+  final String classe;
+  final String typeCours;
+  final String? contactNom;
+  final String? contactTelephone;
+  final String? contactLien;
+  final String syncStatus;
+  final String? syncRaison;
+  final DateTime dateCreationLocale;
+  const EleveEnAttente({
+    this.id,
+    required this.clientUuid,
+    required this.matricule,
+    required this.nom,
+    required this.prenom,
+    this.dateNaissance,
+    required this.sexe,
+    required this.siteId,
+    required this.classe,
+    required this.typeCours,
+    this.contactNom,
+    this.contactTelephone,
+    this.contactLien,
+    required this.syncStatus,
+    this.syncRaison,
+    required this.dateCreationLocale,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<String>(id);
+    }
+    map['client_uuid'] = Variable<String>(clientUuid);
+    map['matricule'] = Variable<String>(matricule);
+    map['nom'] = Variable<String>(nom);
+    map['prenom'] = Variable<String>(prenom);
+    if (!nullToAbsent || dateNaissance != null) {
+      map['date_naissance'] = Variable<DateTime>(dateNaissance);
+    }
+    map['sexe'] = Variable<String>(sexe);
+    map['site_id'] = Variable<String>(siteId);
+    map['classe'] = Variable<String>(classe);
+    map['type_cours'] = Variable<String>(typeCours);
+    if (!nullToAbsent || contactNom != null) {
+      map['contact_nom'] = Variable<String>(contactNom);
+    }
+    if (!nullToAbsent || contactTelephone != null) {
+      map['contact_telephone'] = Variable<String>(contactTelephone);
+    }
+    if (!nullToAbsent || contactLien != null) {
+      map['contact_lien'] = Variable<String>(contactLien);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || syncRaison != null) {
+      map['sync_raison'] = Variable<String>(syncRaison);
+    }
+    map['date_creation_locale'] = Variable<DateTime>(dateCreationLocale);
+    return map;
+  }
+
+  ElevesEnAttenteCompanion toCompanion(bool nullToAbsent) {
+    return ElevesEnAttenteCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      clientUuid: Value(clientUuid),
+      matricule: Value(matricule),
+      nom: Value(nom),
+      prenom: Value(prenom),
+      dateNaissance: dateNaissance == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dateNaissance),
+      sexe: Value(sexe),
+      siteId: Value(siteId),
+      classe: Value(classe),
+      typeCours: Value(typeCours),
+      contactNom: contactNom == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contactNom),
+      contactTelephone: contactTelephone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contactTelephone),
+      contactLien: contactLien == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contactLien),
+      syncStatus: Value(syncStatus),
+      syncRaison: syncRaison == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncRaison),
+      dateCreationLocale: Value(dateCreationLocale),
+    );
+  }
+
+  factory EleveEnAttente.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EleveEnAttente(
+      id: serializer.fromJson<String?>(json['id']),
+      clientUuid: serializer.fromJson<String>(json['clientUuid']),
+      matricule: serializer.fromJson<String>(json['matricule']),
+      nom: serializer.fromJson<String>(json['nom']),
+      prenom: serializer.fromJson<String>(json['prenom']),
+      dateNaissance: serializer.fromJson<DateTime?>(json['dateNaissance']),
+      sexe: serializer.fromJson<String>(json['sexe']),
+      siteId: serializer.fromJson<String>(json['siteId']),
+      classe: serializer.fromJson<String>(json['classe']),
+      typeCours: serializer.fromJson<String>(json['typeCours']),
+      contactNom: serializer.fromJson<String?>(json['contactNom']),
+      contactTelephone: serializer.fromJson<String?>(json['contactTelephone']),
+      contactLien: serializer.fromJson<String?>(json['contactLien']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncRaison: serializer.fromJson<String?>(json['syncRaison']),
+      dateCreationLocale: serializer.fromJson<DateTime>(
+        json['dateCreationLocale'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String?>(id),
+      'clientUuid': serializer.toJson<String>(clientUuid),
+      'matricule': serializer.toJson<String>(matricule),
+      'nom': serializer.toJson<String>(nom),
+      'prenom': serializer.toJson<String>(prenom),
+      'dateNaissance': serializer.toJson<DateTime?>(dateNaissance),
+      'sexe': serializer.toJson<String>(sexe),
+      'siteId': serializer.toJson<String>(siteId),
+      'classe': serializer.toJson<String>(classe),
+      'typeCours': serializer.toJson<String>(typeCours),
+      'contactNom': serializer.toJson<String?>(contactNom),
+      'contactTelephone': serializer.toJson<String?>(contactTelephone),
+      'contactLien': serializer.toJson<String?>(contactLien),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncRaison': serializer.toJson<String?>(syncRaison),
+      'dateCreationLocale': serializer.toJson<DateTime>(dateCreationLocale),
+    };
+  }
+
+  EleveEnAttente copyWith({
+    Value<String?> id = const Value.absent(),
+    String? clientUuid,
+    String? matricule,
+    String? nom,
+    String? prenom,
+    Value<DateTime?> dateNaissance = const Value.absent(),
+    String? sexe,
+    String? siteId,
+    String? classe,
+    String? typeCours,
+    Value<String?> contactNom = const Value.absent(),
+    Value<String?> contactTelephone = const Value.absent(),
+    Value<String?> contactLien = const Value.absent(),
+    String? syncStatus,
+    Value<String?> syncRaison = const Value.absent(),
+    DateTime? dateCreationLocale,
+  }) => EleveEnAttente(
+    id: id.present ? id.value : this.id,
+    clientUuid: clientUuid ?? this.clientUuid,
+    matricule: matricule ?? this.matricule,
+    nom: nom ?? this.nom,
+    prenom: prenom ?? this.prenom,
+    dateNaissance: dateNaissance.present
+        ? dateNaissance.value
+        : this.dateNaissance,
+    sexe: sexe ?? this.sexe,
+    siteId: siteId ?? this.siteId,
+    classe: classe ?? this.classe,
+    typeCours: typeCours ?? this.typeCours,
+    contactNom: contactNom.present ? contactNom.value : this.contactNom,
+    contactTelephone: contactTelephone.present
+        ? contactTelephone.value
+        : this.contactTelephone,
+    contactLien: contactLien.present ? contactLien.value : this.contactLien,
+    syncStatus: syncStatus ?? this.syncStatus,
+    syncRaison: syncRaison.present ? syncRaison.value : this.syncRaison,
+    dateCreationLocale: dateCreationLocale ?? this.dateCreationLocale,
+  );
+  EleveEnAttente copyWithCompanion(ElevesEnAttenteCompanion data) {
+    return EleveEnAttente(
+      id: data.id.present ? data.id.value : this.id,
+      clientUuid: data.clientUuid.present
+          ? data.clientUuid.value
+          : this.clientUuid,
+      matricule: data.matricule.present ? data.matricule.value : this.matricule,
+      nom: data.nom.present ? data.nom.value : this.nom,
+      prenom: data.prenom.present ? data.prenom.value : this.prenom,
+      dateNaissance: data.dateNaissance.present
+          ? data.dateNaissance.value
+          : this.dateNaissance,
+      sexe: data.sexe.present ? data.sexe.value : this.sexe,
+      siteId: data.siteId.present ? data.siteId.value : this.siteId,
+      classe: data.classe.present ? data.classe.value : this.classe,
+      typeCours: data.typeCours.present ? data.typeCours.value : this.typeCours,
+      contactNom: data.contactNom.present
+          ? data.contactNom.value
+          : this.contactNom,
+      contactTelephone: data.contactTelephone.present
+          ? data.contactTelephone.value
+          : this.contactTelephone,
+      contactLien: data.contactLien.present
+          ? data.contactLien.value
+          : this.contactLien,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      syncRaison: data.syncRaison.present
+          ? data.syncRaison.value
+          : this.syncRaison,
+      dateCreationLocale: data.dateCreationLocale.present
+          ? data.dateCreationLocale.value
+          : this.dateCreationLocale,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EleveEnAttente(')
+          ..write('id: $id, ')
+          ..write('clientUuid: $clientUuid, ')
+          ..write('matricule: $matricule, ')
+          ..write('nom: $nom, ')
+          ..write('prenom: $prenom, ')
+          ..write('dateNaissance: $dateNaissance, ')
+          ..write('sexe: $sexe, ')
+          ..write('siteId: $siteId, ')
+          ..write('classe: $classe, ')
+          ..write('typeCours: $typeCours, ')
+          ..write('contactNom: $contactNom, ')
+          ..write('contactTelephone: $contactTelephone, ')
+          ..write('contactLien: $contactLien, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncRaison: $syncRaison, ')
+          ..write('dateCreationLocale: $dateCreationLocale')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    clientUuid,
+    matricule,
+    nom,
+    prenom,
+    dateNaissance,
+    sexe,
+    siteId,
+    classe,
+    typeCours,
+    contactNom,
+    contactTelephone,
+    contactLien,
+    syncStatus,
+    syncRaison,
+    dateCreationLocale,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EleveEnAttente &&
+          other.id == this.id &&
+          other.clientUuid == this.clientUuid &&
+          other.matricule == this.matricule &&
+          other.nom == this.nom &&
+          other.prenom == this.prenom &&
+          other.dateNaissance == this.dateNaissance &&
+          other.sexe == this.sexe &&
+          other.siteId == this.siteId &&
+          other.classe == this.classe &&
+          other.typeCours == this.typeCours &&
+          other.contactNom == this.contactNom &&
+          other.contactTelephone == this.contactTelephone &&
+          other.contactLien == this.contactLien &&
+          other.syncStatus == this.syncStatus &&
+          other.syncRaison == this.syncRaison &&
+          other.dateCreationLocale == this.dateCreationLocale);
+}
+
+class ElevesEnAttenteCompanion extends UpdateCompanion<EleveEnAttente> {
+  final Value<String?> id;
+  final Value<String> clientUuid;
+  final Value<String> matricule;
+  final Value<String> nom;
+  final Value<String> prenom;
+  final Value<DateTime?> dateNaissance;
+  final Value<String> sexe;
+  final Value<String> siteId;
+  final Value<String> classe;
+  final Value<String> typeCours;
+  final Value<String?> contactNom;
+  final Value<String?> contactTelephone;
+  final Value<String?> contactLien;
+  final Value<String> syncStatus;
+  final Value<String?> syncRaison;
+  final Value<DateTime> dateCreationLocale;
+  final Value<int> rowid;
+  const ElevesEnAttenteCompanion({
+    this.id = const Value.absent(),
+    this.clientUuid = const Value.absent(),
+    this.matricule = const Value.absent(),
+    this.nom = const Value.absent(),
+    this.prenom = const Value.absent(),
+    this.dateNaissance = const Value.absent(),
+    this.sexe = const Value.absent(),
+    this.siteId = const Value.absent(),
+    this.classe = const Value.absent(),
+    this.typeCours = const Value.absent(),
+    this.contactNom = const Value.absent(),
+    this.contactTelephone = const Value.absent(),
+    this.contactLien = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncRaison = const Value.absent(),
+    this.dateCreationLocale = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ElevesEnAttenteCompanion.insert({
+    this.id = const Value.absent(),
+    required String clientUuid,
+    required String matricule,
+    required String nom,
+    required String prenom,
+    this.dateNaissance = const Value.absent(),
+    required String sexe,
+    required String siteId,
+    required String classe,
+    required String typeCours,
+    this.contactNom = const Value.absent(),
+    this.contactTelephone = const Value.absent(),
+    this.contactLien = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncRaison = const Value.absent(),
+    required DateTime dateCreationLocale,
+    this.rowid = const Value.absent(),
+  }) : clientUuid = Value(clientUuid),
+       matricule = Value(matricule),
+       nom = Value(nom),
+       prenom = Value(prenom),
+       sexe = Value(sexe),
+       siteId = Value(siteId),
+       classe = Value(classe),
+       typeCours = Value(typeCours),
+       dateCreationLocale = Value(dateCreationLocale);
+  static Insertable<EleveEnAttente> custom({
+    Expression<String>? id,
+    Expression<String>? clientUuid,
+    Expression<String>? matricule,
+    Expression<String>? nom,
+    Expression<String>? prenom,
+    Expression<DateTime>? dateNaissance,
+    Expression<String>? sexe,
+    Expression<String>? siteId,
+    Expression<String>? classe,
+    Expression<String>? typeCours,
+    Expression<String>? contactNom,
+    Expression<String>? contactTelephone,
+    Expression<String>? contactLien,
+    Expression<String>? syncStatus,
+    Expression<String>? syncRaison,
+    Expression<DateTime>? dateCreationLocale,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (clientUuid != null) 'client_uuid': clientUuid,
+      if (matricule != null) 'matricule': matricule,
+      if (nom != null) 'nom': nom,
+      if (prenom != null) 'prenom': prenom,
+      if (dateNaissance != null) 'date_naissance': dateNaissance,
+      if (sexe != null) 'sexe': sexe,
+      if (siteId != null) 'site_id': siteId,
+      if (classe != null) 'classe': classe,
+      if (typeCours != null) 'type_cours': typeCours,
+      if (contactNom != null) 'contact_nom': contactNom,
+      if (contactTelephone != null) 'contact_telephone': contactTelephone,
+      if (contactLien != null) 'contact_lien': contactLien,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncRaison != null) 'sync_raison': syncRaison,
+      if (dateCreationLocale != null)
+        'date_creation_locale': dateCreationLocale,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ElevesEnAttenteCompanion copyWith({
+    Value<String?>? id,
+    Value<String>? clientUuid,
+    Value<String>? matricule,
+    Value<String>? nom,
+    Value<String>? prenom,
+    Value<DateTime?>? dateNaissance,
+    Value<String>? sexe,
+    Value<String>? siteId,
+    Value<String>? classe,
+    Value<String>? typeCours,
+    Value<String?>? contactNom,
+    Value<String?>? contactTelephone,
+    Value<String?>? contactLien,
+    Value<String>? syncStatus,
+    Value<String?>? syncRaison,
+    Value<DateTime>? dateCreationLocale,
+    Value<int>? rowid,
+  }) {
+    return ElevesEnAttenteCompanion(
+      id: id ?? this.id,
+      clientUuid: clientUuid ?? this.clientUuid,
+      matricule: matricule ?? this.matricule,
+      nom: nom ?? this.nom,
+      prenom: prenom ?? this.prenom,
+      dateNaissance: dateNaissance ?? this.dateNaissance,
+      sexe: sexe ?? this.sexe,
+      siteId: siteId ?? this.siteId,
+      classe: classe ?? this.classe,
+      typeCours: typeCours ?? this.typeCours,
+      contactNom: contactNom ?? this.contactNom,
+      contactTelephone: contactTelephone ?? this.contactTelephone,
+      contactLien: contactLien ?? this.contactLien,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncRaison: syncRaison ?? this.syncRaison,
+      dateCreationLocale: dateCreationLocale ?? this.dateCreationLocale,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clientUuid.present) {
+      map['client_uuid'] = Variable<String>(clientUuid.value);
+    }
+    if (matricule.present) {
+      map['matricule'] = Variable<String>(matricule.value);
+    }
+    if (nom.present) {
+      map['nom'] = Variable<String>(nom.value);
+    }
+    if (prenom.present) {
+      map['prenom'] = Variable<String>(prenom.value);
+    }
+    if (dateNaissance.present) {
+      map['date_naissance'] = Variable<DateTime>(dateNaissance.value);
+    }
+    if (sexe.present) {
+      map['sexe'] = Variable<String>(sexe.value);
+    }
+    if (siteId.present) {
+      map['site_id'] = Variable<String>(siteId.value);
+    }
+    if (classe.present) {
+      map['classe'] = Variable<String>(classe.value);
+    }
+    if (typeCours.present) {
+      map['type_cours'] = Variable<String>(typeCours.value);
+    }
+    if (contactNom.present) {
+      map['contact_nom'] = Variable<String>(contactNom.value);
+    }
+    if (contactTelephone.present) {
+      map['contact_telephone'] = Variable<String>(contactTelephone.value);
+    }
+    if (contactLien.present) {
+      map['contact_lien'] = Variable<String>(contactLien.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncRaison.present) {
+      map['sync_raison'] = Variable<String>(syncRaison.value);
+    }
+    if (dateCreationLocale.present) {
+      map['date_creation_locale'] = Variable<DateTime>(
+        dateCreationLocale.value,
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ElevesEnAttenteCompanion(')
+          ..write('id: $id, ')
+          ..write('clientUuid: $clientUuid, ')
+          ..write('matricule: $matricule, ')
+          ..write('nom: $nom, ')
+          ..write('prenom: $prenom, ')
+          ..write('dateNaissance: $dateNaissance, ')
+          ..write('sexe: $sexe, ')
+          ..write('siteId: $siteId, ')
+          ..write('classe: $classe, ')
+          ..write('typeCours: $typeCours, ')
+          ..write('contactNom: $contactNom, ')
+          ..write('contactTelephone: $contactTelephone, ')
+          ..write('contactLien: $contactLien, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncRaison: $syncRaison, ')
+          ..write('dateCreationLocale: $dateCreationLocale, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1862,6 +2986,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PaiementsTable paiements = $PaiementsTable(this);
   late final $DemandesValidationTable demandesValidation =
       $DemandesValidationTable(this);
+  late final $ElevesEnAttenteTable elevesEnAttente = $ElevesEnAttenteTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1871,6 +2998,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     echeances,
     paiements,
     demandesValidation,
+    elevesEnAttente,
   ];
 }
 
@@ -1881,6 +3009,10 @@ typedef $$ElevesTableCreateCompanionBuilder = ElevesCompanion Function({
   required String prenom,
   required String classe,
   required String siteId,
+  Value<DateTime?> dateNaissance,
+  Value<String> sexe,
+  Value<String> typeCours,
+  Value<String> statut,
   Value<int> rowid,
 });
 typedef $$ElevesTableUpdateCompanionBuilder = ElevesCompanion Function({
@@ -1890,6 +3022,10 @@ typedef $$ElevesTableUpdateCompanionBuilder = ElevesCompanion Function({
   Value<String> prenom,
   Value<String> classe,
   Value<String> siteId,
+  Value<DateTime?> dateNaissance,
+  Value<String> sexe,
+  Value<String> typeCours,
+  Value<String> statut,
   Value<int> rowid,
 });
 
@@ -1929,6 +3065,26 @@ class $$ElevesTableFilterComposer
 
   ColumnFilters<String> get siteId => $composableBuilder(
     column: $table.siteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateNaissance => $composableBuilder(
+    column: $table.dateNaissance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sexe => $composableBuilder(
+    column: $table.sexe,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get typeCours => $composableBuilder(
+    column: $table.typeCours,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get statut => $composableBuilder(
+    column: $table.statut,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1971,6 +3127,26 @@ class $$ElevesTableOrderingComposer
     column: $table.siteId,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get dateNaissance => $composableBuilder(
+    column: $table.dateNaissance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sexe => $composableBuilder(
+    column: $table.sexe,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get typeCours => $composableBuilder(
+    column: $table.typeCours,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get statut => $composableBuilder(
+    column: $table.statut,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ElevesTableAnnotationComposer
@@ -1999,6 +3175,20 @@ class $$ElevesTableAnnotationComposer
 
   GeneratedColumn<String> get siteId =>
       $composableBuilder(column: $table.siteId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateNaissance => $composableBuilder(
+    column: $table.dateNaissance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sexe =>
+      $composableBuilder(column: $table.sexe, builder: (column) => column);
+
+  GeneratedColumn<String> get typeCours =>
+      $composableBuilder(column: $table.typeCours, builder: (column) => column);
+
+  GeneratedColumn<String> get statut =>
+      $composableBuilder(column: $table.statut, builder: (column) => column);
 }
 
 class $$ElevesTableTableManager
@@ -2035,6 +3225,10 @@ class $$ElevesTableTableManager
                 Value<String> prenom = const Value.absent(),
                 Value<String> classe = const Value.absent(),
                 Value<String> siteId = const Value.absent(),
+                Value<DateTime?> dateNaissance = const Value.absent(),
+                Value<String> sexe = const Value.absent(),
+                Value<String> typeCours = const Value.absent(),
+                Value<String> statut = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ElevesCompanion(
                 id: id,
@@ -2043,6 +3237,10 @@ class $$ElevesTableTableManager
                 prenom: prenom,
                 classe: classe,
                 siteId: siteId,
+                dateNaissance: dateNaissance,
+                sexe: sexe,
+                typeCours: typeCours,
+                statut: statut,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2053,6 +3251,10 @@ class $$ElevesTableTableManager
                 required String prenom,
                 required String classe,
                 required String siteId,
+                Value<DateTime?> dateNaissance = const Value.absent(),
+                Value<String> sexe = const Value.absent(),
+                Value<String> typeCours = const Value.absent(),
+                Value<String> statut = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ElevesCompanion.insert(
                 id: id,
@@ -2061,10 +3263,23 @@ class $$ElevesTableTableManager
                 prenom: prenom,
                 classe: classe,
                 siteId: siteId,
+                dateNaissance: dateNaissance,
+                sexe: sexe,
+                typeCours: typeCours,
+                statut: statut,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$ElevesTable, Eleve>(table),
+                  BaseReferences<_$AppDatabase, $ElevesTable, Eleve>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2258,7 +3473,16 @@ class $$EcheancesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$EcheancesTable, Echeance>(table),
+                  BaseReferences<_$AppDatabase, $EcheancesTable, Echeance>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2557,7 +3781,16 @@ class $$PaiementsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$PaiementsTable, Paiement>(table),
+                  BaseReferences<_$AppDatabase, $PaiementsTable, Paiement>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2809,7 +4042,18 @@ class $$DemandesValidationTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$DemandesValidationTable, DemandeValidation>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $DemandesValidationTable,
+                    DemandeValidation
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -2837,6 +4081,446 @@ typedef $$DemandesValidationTableProcessedTableManager =
       DemandeValidation,
       PrefetchHooks Function()
     >;
+typedef $$ElevesEnAttenteTableCreateCompanionBuilder =
+    ElevesEnAttenteCompanion Function({
+      Value<String?> id,
+      required String clientUuid,
+      required String matricule,
+      required String nom,
+      required String prenom,
+      Value<DateTime?> dateNaissance,
+      required String sexe,
+      required String siteId,
+      required String classe,
+      required String typeCours,
+      Value<String?> contactNom,
+      Value<String?> contactTelephone,
+      Value<String?> contactLien,
+      Value<String> syncStatus,
+      Value<String?> syncRaison,
+      required DateTime dateCreationLocale,
+      Value<int> rowid,
+    });
+typedef $$ElevesEnAttenteTableUpdateCompanionBuilder =
+    ElevesEnAttenteCompanion Function({
+      Value<String?> id,
+      Value<String> clientUuid,
+      Value<String> matricule,
+      Value<String> nom,
+      Value<String> prenom,
+      Value<DateTime?> dateNaissance,
+      Value<String> sexe,
+      Value<String> siteId,
+      Value<String> classe,
+      Value<String> typeCours,
+      Value<String?> contactNom,
+      Value<String?> contactTelephone,
+      Value<String?> contactLien,
+      Value<String> syncStatus,
+      Value<String?> syncRaison,
+      Value<DateTime> dateCreationLocale,
+      Value<int> rowid,
+    });
+
+class $$ElevesEnAttenteTableFilterComposer
+    extends Composer<_$AppDatabase, $ElevesEnAttenteTable> {
+  $$ElevesEnAttenteTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get matricule => $composableBuilder(
+    column: $table.matricule,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nom => $composableBuilder(
+    column: $table.nom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get prenom => $composableBuilder(
+    column: $table.prenom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateNaissance => $composableBuilder(
+    column: $table.dateNaissance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sexe => $composableBuilder(
+    column: $table.sexe,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get siteId => $composableBuilder(
+    column: $table.siteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get classe => $composableBuilder(
+    column: $table.classe,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get typeCours => $composableBuilder(
+    column: $table.typeCours,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contactNom => $composableBuilder(
+    column: $table.contactNom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contactTelephone => $composableBuilder(
+    column: $table.contactTelephone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contactLien => $composableBuilder(
+    column: $table.contactLien,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateCreationLocale => $composableBuilder(
+    column: $table.dateCreationLocale,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ElevesEnAttenteTableOrderingComposer
+    extends Composer<_$AppDatabase, $ElevesEnAttenteTable> {
+  $$ElevesEnAttenteTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get matricule => $composableBuilder(
+    column: $table.matricule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nom => $composableBuilder(
+    column: $table.nom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get prenom => $composableBuilder(
+    column: $table.prenom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateNaissance => $composableBuilder(
+    column: $table.dateNaissance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sexe => $composableBuilder(
+    column: $table.sexe,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get siteId => $composableBuilder(
+    column: $table.siteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get classe => $composableBuilder(
+    column: $table.classe,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get typeCours => $composableBuilder(
+    column: $table.typeCours,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contactNom => $composableBuilder(
+    column: $table.contactNom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contactTelephone => $composableBuilder(
+    column: $table.contactTelephone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contactLien => $composableBuilder(
+    column: $table.contactLien,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateCreationLocale => $composableBuilder(
+    column: $table.dateCreationLocale,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ElevesEnAttenteTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ElevesEnAttenteTable> {
+  $$ElevesEnAttenteTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get matricule =>
+      $composableBuilder(column: $table.matricule, builder: (column) => column);
+
+  GeneratedColumn<String> get nom =>
+      $composableBuilder(column: $table.nom, builder: (column) => column);
+
+  GeneratedColumn<String> get prenom =>
+      $composableBuilder(column: $table.prenom, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateNaissance => $composableBuilder(
+    column: $table.dateNaissance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sexe =>
+      $composableBuilder(column: $table.sexe, builder: (column) => column);
+
+  GeneratedColumn<String> get siteId =>
+      $composableBuilder(column: $table.siteId, builder: (column) => column);
+
+  GeneratedColumn<String> get classe =>
+      $composableBuilder(column: $table.classe, builder: (column) => column);
+
+  GeneratedColumn<String> get typeCours =>
+      $composableBuilder(column: $table.typeCours, builder: (column) => column);
+
+  GeneratedColumn<String> get contactNom => $composableBuilder(
+    column: $table.contactNom,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contactTelephone => $composableBuilder(
+    column: $table.contactTelephone,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contactLien => $composableBuilder(
+    column: $table.contactLien,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dateCreationLocale => $composableBuilder(
+    column: $table.dateCreationLocale,
+    builder: (column) => column,
+  );
+}
+
+class $$ElevesEnAttenteTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ElevesEnAttenteTable,
+          EleveEnAttente,
+          $$ElevesEnAttenteTableFilterComposer,
+          $$ElevesEnAttenteTableOrderingComposer,
+          $$ElevesEnAttenteTableAnnotationComposer,
+          $$ElevesEnAttenteTableCreateCompanionBuilder,
+          $$ElevesEnAttenteTableUpdateCompanionBuilder,
+          (
+            EleveEnAttente,
+            BaseReferences<
+              _$AppDatabase,
+              $ElevesEnAttenteTable,
+              EleveEnAttente
+            >,
+          ),
+          EleveEnAttente,
+          PrefetchHooks Function()
+        > {
+  $$ElevesEnAttenteTableTableManager(
+    _$AppDatabase db,
+    $ElevesEnAttenteTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ElevesEnAttenteTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ElevesEnAttenteTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ElevesEnAttenteTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String?> id = const Value.absent(),
+                Value<String> clientUuid = const Value.absent(),
+                Value<String> matricule = const Value.absent(),
+                Value<String> nom = const Value.absent(),
+                Value<String> prenom = const Value.absent(),
+                Value<DateTime?> dateNaissance = const Value.absent(),
+                Value<String> sexe = const Value.absent(),
+                Value<String> siteId = const Value.absent(),
+                Value<String> classe = const Value.absent(),
+                Value<String> typeCours = const Value.absent(),
+                Value<String?> contactNom = const Value.absent(),
+                Value<String?> contactTelephone = const Value.absent(),
+                Value<String?> contactLien = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncRaison = const Value.absent(),
+                Value<DateTime> dateCreationLocale = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ElevesEnAttenteCompanion(
+                id: id,
+                clientUuid: clientUuid,
+                matricule: matricule,
+                nom: nom,
+                prenom: prenom,
+                dateNaissance: dateNaissance,
+                sexe: sexe,
+                siteId: siteId,
+                classe: classe,
+                typeCours: typeCours,
+                contactNom: contactNom,
+                contactTelephone: contactTelephone,
+                contactLien: contactLien,
+                syncStatus: syncStatus,
+                syncRaison: syncRaison,
+                dateCreationLocale: dateCreationLocale,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> id = const Value.absent(),
+                required String clientUuid,
+                required String matricule,
+                required String nom,
+                required String prenom,
+                Value<DateTime?> dateNaissance = const Value.absent(),
+                required String sexe,
+                required String siteId,
+                required String classe,
+                required String typeCours,
+                Value<String?> contactNom = const Value.absent(),
+                Value<String?> contactTelephone = const Value.absent(),
+                Value<String?> contactLien = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncRaison = const Value.absent(),
+                required DateTime dateCreationLocale,
+                Value<int> rowid = const Value.absent(),
+              }) => ElevesEnAttenteCompanion.insert(
+                id: id,
+                clientUuid: clientUuid,
+                matricule: matricule,
+                nom: nom,
+                prenom: prenom,
+                dateNaissance: dateNaissance,
+                sexe: sexe,
+                siteId: siteId,
+                classe: classe,
+                typeCours: typeCours,
+                contactNom: contactNom,
+                contactTelephone: contactTelephone,
+                contactLien: contactLien,
+                syncStatus: syncStatus,
+                syncRaison: syncRaison,
+                dateCreationLocale: dateCreationLocale,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ElevesEnAttenteTable, EleveEnAttente>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ElevesEnAttenteTable,
+                    EleveEnAttente
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ElevesEnAttenteTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ElevesEnAttenteTable,
+      EleveEnAttente,
+      $$ElevesEnAttenteTableFilterComposer,
+      $$ElevesEnAttenteTableOrderingComposer,
+      $$ElevesEnAttenteTableAnnotationComposer,
+      $$ElevesEnAttenteTableCreateCompanionBuilder,
+      $$ElevesEnAttenteTableUpdateCompanionBuilder,
+      (
+        EleveEnAttente,
+        BaseReferences<_$AppDatabase, $ElevesEnAttenteTable, EleveEnAttente>,
+      ),
+      EleveEnAttente,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2849,4 +4533,6 @@ class $AppDatabaseManager {
       $$PaiementsTableTableManager(_db, _db.paiements);
   $$DemandesValidationTableTableManager get demandesValidation =>
       $$DemandesValidationTableTableManager(_db, _db.demandesValidation);
+  $$ElevesEnAttenteTableTableManager get elevesEnAttente =>
+      $$ElevesEnAttenteTableTableManager(_db, _db.elevesEnAttente);
 }
