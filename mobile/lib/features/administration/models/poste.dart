@@ -1,10 +1,8 @@
-import 'permission.dart';
-
 class Poste {
   final String id;
   final String nom;
   final bool tousSites;
-  final List<Permission> permissions;
+  final List<String> permissions;
 
   const Poste({
     required this.id,
@@ -14,22 +12,22 @@ class Poste {
   });
 
   factory Poste.fromJson(Map<String, dynamic> json) {
-    final permissionsJson = json['permissions'] as List<dynamic>? ?? [];
-
     return Poste(
-      id: json['id'].toString(),
+      id: json['id'] as String,
       nom: json['nom'] as String,
-      tousSites: json['tous_sites'] as bool? ?? false,
-      permissions: permissionsJson
-          .whereType<String>()
-          .map(
-            (code) => Permission(
-              id: code,
-              code: code,
-              libelle: code,
-            ),
-          )
-          .toList(),
+      tousSites: json['tous_sites'] as bool,
+      permissions: (json['permissions'] as List).cast<String>(),
+    );
+  }
+
+  Poste copyWith({
+    List<String>? permissions,
+  }) {
+    return Poste(
+      id: id,
+      nom: nom,
+      tousSites: tousSites,
+      permissions: permissions ?? this.permissions,
     );
   }
 }

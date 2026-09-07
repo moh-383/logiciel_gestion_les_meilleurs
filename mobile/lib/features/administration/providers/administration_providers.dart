@@ -2,50 +2,54 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api_client.dart';
 import '../data/administration_repository.dart';
-import '../models/permission.dart';
+import '../models/permission_catalogue.dart';
 import '../models/poste.dart';
-import '../models/site.dart';
-import '../models/utilisateur.dart';
+import '../models/utilisateur_resume.dart';
 
 final administrationRepositoryProvider =
     Provider<AdministrationRepository>((ref) {
+  final dio = ref.watch(dioProvider);
+
   return AdministrationRepository(
-    ref.watch(dioProvider),
+    dio: dio,
   );
-});
-
-final permissionsProvider =
-    FutureProvider<List<Permission>>((ref) async {
-  final repository = ref.watch(
-    administrationRepositoryProvider,
-  );
-
-  return repository.getPermissions();
 });
 
 final postesProvider =
-    FutureProvider<List<Poste>>((ref) async {
-  final repository = ref.watch(
-    administrationRepositoryProvider,
-  );
+    FutureProvider.autoDispose<List<Poste>>((ref) {
+  final repository =
+      ref.watch(administrationRepositoryProvider);
 
-  return repository.getPostes();
+  return repository.listerPostes();
 });
 
-final sitesProvider =
-    FutureProvider<List<Site>>((ref) async {
-  final repository = ref.watch(
-    administrationRepositoryProvider,
-  );
+final permissionsCatalogueProvider =
+    FutureProvider.autoDispose<List<PermissionCatalogue>>((ref) {
+  final repository =
+      ref.watch(administrationRepositoryProvider);
 
-  return repository.getSites();
+  return repository.catalogueDesPermissions();
 });
 
-final utilisateursProvider =
-    FutureProvider<List<Utilisateur>>((ref) async {
-  final repository = ref.watch(
-    administrationRepositoryProvider,
-  );
+final posteDetailProvider =
+    FutureProvider.autoDispose.family<Poste, String>(
+  (ref, posteId) {
+    final repository =
+        ref.watch(administrationRepositoryProvider);
 
-  return repository.getUtilisateurs();
-});
+    return repository.obtenirPoste(posteId);
+  },
+);
+
+final utilisateursDuPosteProvider =
+    FutureProvider.autoDispose
+        .family<List<UtilisateurResume>, String>(
+  (ref, posteId) {
+    final repository =
+        ref.watch(administrationRepositoryProvider);
+
+    return repository.listerUtilisateurs(
+      posteId: posteId,
+    );
+  },
+);
