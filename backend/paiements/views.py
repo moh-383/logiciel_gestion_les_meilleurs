@@ -2,16 +2,22 @@ from django.db import IntegrityError, transaction
 from django.db.models import Count, Sum
 from django.utils import timezone
 from rest_framework import generics, status
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.models import Site
 from core.permissions import ALaPermissionMetier
 from eleves.models import Eleve
+
 from .models import DemandeValidation, Paiement
-from .serializers import (DemandeValidationSerializer, PaiementEcritureSerializer,
-                          PaiementSerializer, PaiementSyncSerializer, TraitementDemandeSerializer)
+from .serializers import (
+    DemandeValidationSerializer,
+    PaiementEcritureSerializer,
+    PaiementSerializer,
+    PaiementSyncSerializer,
+    TraitementDemandeSerializer,
+)
 from .services import enregistrer_paiement, recalculer_statut_echeance
 
 

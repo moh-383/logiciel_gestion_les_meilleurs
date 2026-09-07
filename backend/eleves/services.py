@@ -1,6 +1,6 @@
-import datetime
 
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from core.permissions import dans_perimetre
@@ -9,7 +9,7 @@ from .models import ContactParent, Eleve
 
 
 def _generer_matricule():
-    annee = datetime.date.today().year
+    annee = timezone.localdate().year
     prefixe = f"ELV-{annee}-"
     dernier = (
         Eleve.objects.filter(matricule__startswith=prefixe)
@@ -82,3 +82,4 @@ def enregistrer_eleve(*, data, utilisateur):
     )
 
     return eleve, True
+

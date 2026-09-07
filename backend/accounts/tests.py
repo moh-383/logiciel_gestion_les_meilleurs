@@ -1,7 +1,7 @@
-from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from core.models import Permission, Poste, Site
+
 from .models import Utilisateur
 
 

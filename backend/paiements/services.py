@@ -6,11 +6,12 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from eleves.models import Echeance
+
 from .models import Paiement
 
 
 def recalculer_statut_echeance(echeance):
-    total = echeance.paiements.filter(statut="valide").aggregate(total=Sum("montant"))["total"] or Decimal("0")
+    total = echeance.paiements.filter(statut="valide").aggregate(total=Sum("montant"))["total"] or Decimal(0)
     if total >= echeance.montant_du:
         statut = "a_jour"
     elif total > 0:
@@ -38,7 +39,7 @@ def enregistrer_paiement(*, data, utilisateur):
     montant = data["montant"]
     if montant <= 0:
         raise ValidationError({"montant": "Le montant doit être strictement positif."})
-    total = echeance.paiements.filter(statut="valide").aggregate(total=Sum("montant"))["total"] or Decimal("0")
+    total = echeance.paiements.filter(statut="valide").aggregate(total=Sum("montant"))["total"] or Decimal(0)
     if total + montant > echeance.montant_du:
         raise ValidationError({"montant": "Le paiement dépasse le solde de l'échéance."})
 
