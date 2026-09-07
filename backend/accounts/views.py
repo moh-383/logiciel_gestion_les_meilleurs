@@ -89,18 +89,18 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
             serializer.save()
 
 
-def perform_update(self, serializer):
-    site = serializer.validated_data.get(
-        "site",
-        serializer.instance.site
-    )
-
-    if site is not None and not dans_perimetre(
-        self.request.user,
-        site.id
-    ):
-        raise PermissionDenied(
-            "Vous ne pouvez pas affecter cet utilisateur à ce site."
+    def perform_update(self, serializer):
+        site = serializer.validated_data.get(
+            "site",
+            serializer.instance.site
         )
 
-    serializer.save()
+        if site is not None and not dans_perimetre(
+            self.request.user,
+            site.id
+        ):
+            raise PermissionDenied(
+                "Vous ne pouvez pas affecter cet utilisateur à ce site."
+            )
+
+        serializer.save()

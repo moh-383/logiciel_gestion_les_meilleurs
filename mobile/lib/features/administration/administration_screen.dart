@@ -1,8 +1,13 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/api_client.dart';
+import 'models/permission.dart';
+import 'models/poste.dart';
+import 'models/site.dart';
+import 'models/utilisateur.dart';
+import 'providers/administration_providers.dart';
+import 'screens/utilisateur_creation_screen.dart';
+import 'screens/utilisateur_modification_screen.dart';
 
 class AdministrationScreen extends ConsumerStatefulWidget {
   const AdministrationScreen({super.key});
@@ -15,17 +20,14 @@ class AdministrationScreen extends ConsumerStatefulWidget {
 class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  bool _chargement = true;
-  String? _erreur;
-  List<Map<String, dynamic>> _sites = [];
-  List<Map<String, dynamic>> _postes = [];
-  List<Map<String, dynamic>> _permissions = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _charger();
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+    );
   }
 
   @override
@@ -34,89 +36,77 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
     super.dispose();
   }
 
-  Future<void> _charger() async {
-    setState(() {
-      _chargement = true;
-      _erreur = null;
-    });
-    try {
-      final dio = ref.read(dioProvider);
-      final reponses = await Future.wait([
-        dio.get('/sites', queryParameters: {'limit': 100}),
-        dio.get('/postes', queryParameters: {'limit': 100}),
-        dio.get('/permissions', queryParameters: {'limit': 100}),
-      ]);
-      if (!mounted) return;
-      setState(() {
-        _sites = _liste(reponses[0].data);
-        _postes = _liste(reponses[1].data);
-        _permissions = _liste(reponses[2].data);
-        _chargement = false;
-      });
-    } on DioException catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _chargement = false;
-        _erreur = _messageErreur(error);
-      });
-    }
-  }
-
-  List<Map<String, dynamic>> _liste(Object? data) {
-    if (data is Map && data['data'] is List) {
-      return (data['data'] as List)
-          .map((item) => Map<String, dynamic>.from(item as Map))
-          .toList();
-    }
-    if (data is List) {
-      return data
-          .map((item) => Map<String, dynamic>.from(item as Map))
-          .toList();
-    }
-    return [];
-  }
-
-  String _messageErreur(DioException error) {
-    final data = error.response?.data;
-    if (data is Map && data['message'] != null) {
-      return data['message'].toString();
-    }
-    return error.message ?? 'Impossible de charger l’administration.';
+  Future<void> _actualiser() async {
+    ref.invalidate(sitesProvider);
+    ref.invalidate(postesProvider);
+    ref.invalidate(permissionsProvider);
+    ref.invalidate(utilisateursProvider);
   }
 
   Future<void> _creerPoste() async {
-    final nom = await _demanderTexte('Nouveau poste', 'Nom du poste');
+    final nom = await _demanderTexte(
+      'Nouveau poste',
+      'Nom du poste',
+    );
+
     if (nom == null || nom.trim().isEmpty) return;
+
     try {
-      await ref
-          .read(dioProvider)
-          .post(
-            '/postes',
-            data: {
-              'nom': nom.trim(),
-              'tous_sites': false,
-              'permissions': const <String>[],
-            },
+      await ref.read(administrationRepositoryProvider).creerPoste(
+            nom: nom.trim(),
           );
-      await _charger();
-    } on DioException catch (error) {
-      _afficherErreur(_messageErreur(error));
+
+      ref.invalidate(postesProvider);
+
+      if (mounted) {
+        _afficherMessage(
+          'Poste créé avec succès.',
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        _afficherErreur(
+          error.toString(),
+        );
+      }
     }
   }
 
   Future<void> _creerSite() async {
-    final nom = await _demanderTexte('Nouveau site', 'Nom du site');
+    final nom = await _demanderTexte(
+      'Nouveau site',
+      'Nom du site',
+    );
+
     if (nom == null || nom.trim().isEmpty) return;
+
     try {
-      await ref.read(dioProvider).post('/sites', data: {'nom': nom.trim()});
-      await _charger();
-    } on DioException catch (error) {
-      _afficherErreur(_messageErreur(error));
+      await ref.read(administrationRepositoryProvider).creerSite(
+            nom: nom.trim(),
+          );
+
+      ref.invalidate(sitesProvider);
+
+      if (mounted) {
+        _afficherMessage(
+          'Site créé avec succès.',
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        _afficherErreur(
+          error.toString(),
+        );
+      }
     }
   }
 
-  Future<String?> _demanderTexte(String titre, String label) {
+  Future<String?> _demanderTexte(
+    String titre,
+    String label,
+  ) {
     final controller = TextEditingController();
+
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -124,15 +114,24 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(labelText: label),
+          decoration: InputDecoration(
+            labelText: label,
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+            },
             child: const Text('Annuler'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text),
+            onPressed: () {
+              Navigator.pop(
+                context,
+                controller.text,
+              );
+            },
             child: const Text('Créer'),
           ),
         ],
@@ -140,104 +139,320 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
     );
   }
 
+  void _afficherMessage(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
   void _afficherErreur(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
+  Future<void> _ouvrirModificationUtilisateur(
+    Utilisateur utilisateur,
+  ) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UtilisateurModificationScreen(
+          utilisateur: utilisateur,
+        ),
+      ),
+    );
+
+    ref.invalidate(utilisateursProvider);
+  }
+
+  Future<void> _ouvrirCreationUtilisateur() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            const UtilisateurCreationScreen(),
+      ),
+    );
+
+    ref.invalidate(utilisateursProvider);
   }
 
   @override
   Widget build(BuildContext context) {
+    final sites = ref.watch(sitesProvider);
+    final postes = ref.watch(postesProvider);
+    final permissions = ref.watch(permissionsProvider);
+    final utilisateurs = ref.watch(
+      utilisateursProvider,
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Administration'),
+        title: const Text(
+          'Administration',
+        ),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
             Tab(text: 'Sites'),
             Tab(text: 'Postes'),
             Tab(text: 'Permissions'),
+            Tab(text: 'Utilisateurs'),
           ],
         ),
       ),
-      body: _chargement
-          ? const Center(child: CircularProgressIndicator())
-          : _erreur != null
-          ? Center(child: Text(_erreur!))
-          : RefreshIndicator(
-              onRefresh: _charger,
-              child: TabBarView(
-                controller: _tabController,
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _ConstruireListe<Site>(
+            asyncValue: sites,
+            titre: (site) => site.nom,
+            sousTitre: (site) => site.adresse.isEmpty
+                ? 'Adresse non renseignée'
+                : site.adresse,
+            icone: Icons.location_on,
+            onRefresh: _actualiser,
+          ),
+          _ConstruireListe<Poste>(
+            asyncValue: postes,
+            titre: (poste) => poste.nom,
+            sousTitre: (poste) => poste.tousSites
+                ? 'Accès multi-sites'
+                : 'Accès limité au site',
+            icone: Icons.badge,
+            onRefresh: _actualiser,
+          ),
+          _ConstruireListe<Permission>(
+            asyncValue: permissions,
+            titre: (permission) => permission.libelle,
+            sousTitre: (permission) => permission.code,
+            icone: Icons.lock,
+            onRefresh: _actualiser,
+          ),
+          utilisateurs.when(
+            loading: () => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            error: (error, _) => RefreshIndicator(
+              onRefresh: _actualiser,
+              child: ListView(
+                physics:
+                    const AlwaysScrollableScrollPhysics(),
                 children: [
-                  _ListeAdministration(
-                    items: _sites,
-                    titre: (item) => item['nom']?.toString() ?? '',
-                    sousTitre: (item) =>
-                        item['adresse']?.toString() ?? 'Adresse non renseignée',
-                  ),
-                  _ListeAdministration(
-                    items: _postes,
-                    titre: (item) => item['nom']?.toString() ?? '',
-                    sousTitre: (item) => (item['tous_sites'] == true)
-                        ? 'Accès multi-sites'
-                        : 'Accès limité au site',
-                  ),
-                  _ListeAdministration(
-                    items: _permissions,
-                    titre: (item) => item['libelle']?.toString() ?? '',
-                    sousTitre: (item) => item['code']?.toString() ?? '',
+                  SizedBox(
+                    height: 300,
+                    child: Center(
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.all(24),
+                        child: Text(
+                          'Erreur : $error',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
+            data: (items) {
+              if (items.isEmpty) {
+                return RefreshIndicator(
+                  onRefresh: _actualiser,
+                  child: ListView(
+                    physics:
+                        const AlwaysScrollableScrollPhysics(),
+                    children: const [
+                      SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: Text(
+                            'Aucun utilisateur',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: _actualiser,
+                child: ListView.separated(
+                  padding:
+                      const EdgeInsets.all(16),
+                  itemCount: items.length,
+                  separatorBuilder: (_, _) =>
+                      const Divider(
+                    height: 1,
+                  ),
+                  itemBuilder: (context, index) {
+                    final utilisateur =
+                        items[index];
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        child: Icon(
+                          utilisateur.isActive
+                              ? Icons.person
+                              : Icons.person_off,
+                        ),
+                      ),
+                      title: Text(
+                        utilisateur.nom,
+                      ),
+                      subtitle: Text(
+                        '${utilisateur.telephone} • ${utilisateur.isActive ? 'Actif' : 'Inactif'}',
+                      ),
+                      trailing: const Icon(
+                        Icons.chevron_right,
+                      ),
+                      onTap: () =>
+                          _ouvrirModificationUtilisateur(
+                        utilisateur,
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       floatingActionButton: ListenableBuilder(
         listenable: _tabController,
-        builder: (context, _) => FloatingActionButton.extended(
-          onPressed: _tabController.index == 0
-              ? _creerSite
-              : _tabController.index == 1
-              ? _creerPoste
-              : null,
-          icon: const Icon(Icons.add),
-          label: Text(
-            _tabController.index == 0 ? 'Nouveau site' : 'Nouveau poste',
-          ),
-        ),
+        builder: (context, _) {
+          final index = _tabController.index;
+
+          if (index == 2) {
+            return const SizedBox.shrink();
+          }
+
+          return FloatingActionButton.extended(
+            onPressed: index == 0
+                ? _creerSite
+                : index == 1
+                ? _creerPoste
+                : _ouvrirCreationUtilisateur,
+            icon: const Icon(
+              Icons.add,
+            ),
+            label: Text(
+              index == 0
+                  ? 'Nouveau site'
+                  : index == 1
+                  ? 'Nouveau poste'
+                  : 'Nouvel utilisateur',
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-class _ListeAdministration extends StatelessWidget {
-  final List<Map<String, dynamic>> items;
-  final String Function(Map<String, dynamic>) titre;
-  final String Function(Map<String, dynamic>) sousTitre;
+class _ConstruireListe<T>
+    extends StatelessWidget {
+  final AsyncValue<List<T>> asyncValue;
+  final String Function(T item) titre;
+  final String Function(T item) sousTitre;
+  final IconData icone;
+  final Future<void> Function() onRefresh;
 
-  const _ListeAdministration({
-    required this.items,
+  const _ConstruireListe({
+    required this.asyncValue,
     required this.titre,
     required this.sousTitre,
+    required this.icone,
+    required this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: const [
-          SizedBox(height: 180, child: Center(child: Text('Aucun élément'))),
-        ],
-      );
-    }
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: items.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
-      itemBuilder: (context, index) => ListTile(
-        leading: const CircleAvatar(child: Icon(Icons.tune)),
-        title: Text(titre(items[index])),
-        subtitle: Text(sousTitre(items[index])),
+    return asyncValue.when(
+      loading: () => const Center(
+        child: CircularProgressIndicator(),
       ),
+      error: (error, _) => RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          physics:
+              const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: 300,
+              child: Center(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.all(24),
+                  child: Text(
+                    'Erreur : $error',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      data: (items) {
+        if (items.isEmpty) {
+          return RefreshIndicator(
+            onRefresh: onRefresh,
+            child: ListView(
+              physics:
+                  const AlwaysScrollableScrollPhysics(),
+              children: const [
+                SizedBox(
+                  height: 300,
+                  child: Center(
+                    child: Text(
+                      'Aucun élément',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: onRefresh,
+          child: ListView.separated(
+            padding:
+                const EdgeInsets.all(16),
+            itemCount: items.length,
+            separatorBuilder: (_, _) =>
+                const Divider(
+              height: 1,
+            ),
+            itemBuilder: (context, index) {
+              final item = items[index];
+
+              return ListTile(
+                leading: CircleAvatar(
+                  child: Icon(icone),
+                ),
+                title: Text(
+                  titre(item),
+                ),
+                subtitle: Text(
+                  sousTitre(item),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
