@@ -51,6 +51,7 @@ erDiagram
   }
   ELEVE {
     uuid id PK
+    string matricule
     string nom
     string prenom
     date date_naissance
@@ -107,10 +108,21 @@ Un poste occupable (Direction générale, Direction pédagogique, Responsable de
 - `tous_sites` : `true` pour les postes de direction (accès multi-sites), `false` sinon.
 
 ### `PERMISSION`
-Catalogue des permissions modulaires disponibles : `voir_finances`, `voir_pedagogie`, `gerer_comptes`, `valider_actions_sensibles`, etc. Ce catalogue est extensible sans modification du modèle de données.
+Catalogue des permissions modulaires disponibles. Extensible sans modification du modèle de données (ajouter une ligne suffit, aucune migration de structure).
+
+| Code | Libellé | Domaine | Endpoints concernés |
+|---|---|---|---|
+| `gerer_eleves` | Créer/modifier les élèves et leurs contacts | Élèves | `POST/PATCH /eleves`, `/eleves/{id}/contacts`, `/contacts/{id}` |
+| `voir_pedagogie` | Voir les rapports et données pédagogiques | Élèves/Pédagogie | Réservé V2 (module Enseignants/Rapports) |
+| `gerer_comptes` | Gérer postes, permissions, utilisateurs, sites | Administration | `/postes/*`, `/permissions`, `/utilisateurs/*`, `POST/PATCH /sites` |
+| `saisir_paiement` | Enregistrer un paiement, soumettre une demande d'annulation | Paiements | `POST /paiements`, `/paiements/{id}/demande-annulation`, `POST /sync/paiements` |
+| `voir_finances` | Consulter paiements, retards, statistiques financières d'un site | Paiements | `GET /sites/{id}/paiements`, `/sites/{id}/stats/paiements` |
+| `valider_actions_sensibles` | Approuver/rejeter les demandes de validation (ex. annulation de paiement) | Workflow | `/demandes-validation/*` |
+
+**Note V2** : `voir_pedagogie` est posé dès le MVP pour éviter une migration de schéma plus tard, mais reste sans endpoint tant que le module Enseignants (Lot 2) n'existe pas. Décision actée : un enseignant (V2) n'aura **pas** accès à la fiche élève complète — seulement aux données pédagogiques le concernant (présence, notes de ses propres cours). Le périmètre exact sera défini au Sprint 8.
 
 ### `POSTE_PERMISSION`
-Table de liaison many-to-many entre postes et permissions : c'est le cœur du système de permissions modulaires.
+Table de liaison many-to-many entre postes et permissions, c'est le cœur du système de permissions modulaires.
 
 ### `UTILISATEUR`
 Toute personne ayant un compte dans le système (direction, responsable de site, secrétaire, enseignant).
@@ -119,6 +131,7 @@ Toute personne ayant un compte dans le système (direction, responsable de site,
 
 ### `ELEVE`
 Fiche élève.
+- `matricule` : identifiant lisible attribué par la structure (utilisé pour la recherche, en plus du nom).
 - `site_id` → `SITE`.
 - `statut` : actif / inactif (ex. élève ayant quitté en cours d'année).
 
@@ -128,13 +141,13 @@ Un ou plusieurs contacts parent/tuteur par élève.
 
 ### `ECHEANCE`
 Ce qui est dû par un élève à une date donnée (ex. échéance trimestrielle).
-- `statut` : à jour / partiel / en retard : recalculé automatiquement à partir des paiements liés.
+- `statut` : à jour / partiel / en retard — recalculé automatiquement à partir des paiements liés.
 
 ### `PAIEMENT`
 Un paiement reçu, lié à une échéance.
 - `saisi_par` → `UTILISATEUR` : qui a enregistré le paiement (traçabilité).
 - `statut` : validé / annulé.
-- `sync_status` : synchronisé / en attente : pour le mode hors ligne de l'app mobile.
+- `sync_status` : synchronisé / en attente, pour le mode hors ligne de l'app mobile.
 - Une échéance peut recevoir plusieurs paiements (paiements partiels).
 
 ### `DEMANDE_VALIDATION`
@@ -144,6 +157,6 @@ Table générique pour le workflow d'approbation des actions sensibles (ex. annu
 
 ## Points d'attention pour l'implémentation
 
-- **Cloisonnement par site** : toute requête émise par un utilisateur dont le poste n'a pas `tous_sites = true` doit être filtrée par son `site_id` côté serveur : jamais laissé au seul contrôle de l'interface.
+- **Cloisonnement par site** : toute requête émise par un utilisateur dont le poste n'a pas `tous_sites = true` doit être filtrée par son `site_id` côté serveur, jamais laissé au seul contrôle de l'interface.
 - **Recalcul du statut d'échéance** : à faire via un trigger DB ou une logique applicative déclenchée à chaque nouveau paiement, pas en calcul à la volée à chaque lecture (performance).
-- **Synchronisation offline** : `PAIEMENT.sync_status` doit permettre d'identifier et de rejouer les paiements créés hors ligne ; prévoir une stratégie de résolution de conflits si deux paiements sont créés sur la même échéance depuis deux appareils avant synchronisation.
+- **Synchronisation offline** : `PAIEMENT.sync_status` doit permettre d'identifier et de rejouer les paiements créés hors-ligne ; prévoir une stratégie de résolution de conflits si deux paiements sont créés sur la même échéance depuis deux appareils avant synchronisation.
