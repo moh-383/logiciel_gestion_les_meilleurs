@@ -62,7 +62,12 @@ class DemandesValidation extends Table {
   TextColumn get statut => text().withDefault(
     const Constant('en_attente'),
   )(); // en_attente / validee / rejetee
+  TextColumn get commentaire => text().nullable()();
+  TextColumn get creationSyncStatus =>
+      text().withDefault(const Constant('en_attente'))();
+  TextColumn get creationSyncRaison => text().nullable()();
   DateTimeColumn get dateDemande => dateTime()();
+  DateTimeColumn get dateTraitement => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {clientUuid};

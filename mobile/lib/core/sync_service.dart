@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../features/paiements/data/demande_validation_sync_service.dart';
 import '../features/paiements/paiements_list_screen.dart' show databaseProvider;
 import 'api_client.dart';
 import 'import_service.dart';
@@ -39,10 +40,16 @@ class SyncService {
   final AppDatabase db;
   final Dio dio;
   final ImportService? importService;
+  final DemandeValidationSyncService? demandeValidationSyncService;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _syncEnCours = false;
 
-  SyncService({required this.db, required this.dio, this.importService});
+  SyncService({
+    required this.db,
+    required this.dio,
+    this.importService,
+    this.demandeValidationSyncService,
+  });
 
   /// À appeler une fois au démarrage de l'app : synchronise dès que
   /// la connexion revient, sans action de l'utilisateur.
@@ -56,6 +63,7 @@ class SyncService {
         // s'il échoue (ex. session expirée), on tente quand même la sync.
         await importService?.importerDonneesDuSite();
         await synchroniser();
+        await demandeValidationSyncService?.synchroniser();
       }
     });
   }
@@ -97,8 +105,9 @@ class SyncService {
       };
 
       final reponse = await dio.post('/sync/paiements', data: corps);
-      final resultats = (reponse.data['resultats'] as List)
-          .map((r) => Map<String, dynamic>.from(r as Map));
+      final resultats = (reponse.data['resultats'] as List).map(
+        (r) => Map<String, dynamic>.from(r as Map),
+      );
 
       int nbCrees = 0;
       int nbConflits = 0;
@@ -112,8 +121,8 @@ class SyncService {
           raison: r['raison'] == null
               ? null
               : r['raison'] is String
-                  ? r['raison'] as String
-                  : jsonEncode(r['raison']),
+              ? r['raison'] as String
+              : jsonEncode(r['raison']),
         );
         if (statut == 'cree') {
           nbCrees++;
@@ -163,7 +172,8 @@ class SyncService {
 
   String _messageErreur(DioException erreur) {
     final data = erreur.response?.data;
-    if (data is Map && data['message'] is String) return data['message'] as String;
+    if (data is Map && data['message'] is String)
+      return data['message'] as String;
     return erreur.message ?? 'Le serveur est inaccessible.';
   }
 }
@@ -172,5 +182,13 @@ final syncServiceProvider = Provider<SyncService>((ref) {
   final db = ref.watch(databaseProvider);
   final dio = ref.watch(dioProvider);
   final importService = ref.watch(importServiceProvider);
-  return SyncService(db: db, dio: dio, importService: importService);
+  final demandeValidationSyncService = ref.watch(
+    demandeValidationSyncServiceProvider,
+  );
+  return SyncService(
+    db: db,
+    dio: dio,
+    importService: importService,
+    demandeValidationSyncService: demandeValidationSyncService,
+  );
 });

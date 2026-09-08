@@ -27,11 +27,18 @@ class PaiementSyncSerializer(PaiementEcritureSerializer):
 
 class DemandeValidationSerializer(serializers.ModelSerializer):
     paiement_id = serializers.UUIDField(read_only=True)
+    montant = serializers.DecimalField(source="paiement.montant", max_digits=12, decimal_places=0, read_only=True)
+    mode_paiement = serializers.CharField(source="paiement.mode_paiement", read_only=True)
+    eleve_nom = serializers.SerializerMethodField()
+
+    def get_eleve_nom(self, obj):
+        eleve = obj.paiement.echeance.eleve
+        return f"{eleve.prenom} {eleve.nom}"
 
     class Meta:
         model = DemandeValidation
-        fields = ("id", "type_action", "paiement_id", "statut", "motif", "commentaire", "date_demande", "date_traitement")
-        read_only_fields = ("id", "type_action", "paiement_id", "statut", "date_demande", "date_traitement")
+        fields = ("id", "type_action", "paiement_id", "montant", "mode_paiement", "eleve_nom", "statut", "motif", "commentaire", "date_demande", "date_traitement")
+        read_only_fields = ("id", "type_action", "paiement_id", "montant", "mode_paiement", "eleve_nom", "statut", "date_demande", "date_traitement")
 
 
 class TraitementDemandeSerializer(serializers.Serializer):

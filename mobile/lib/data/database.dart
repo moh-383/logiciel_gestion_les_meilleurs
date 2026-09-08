@@ -61,9 +61,9 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion =>
-      7; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison
-      // v5 : note · v6 : cache élèves enrichi · v7 : file d'attente élèves
+  int get schemaVersion => 8; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison
+  // v5 : note · v6 : cache élèves enrichi · v7 : file d'attente élèves
+  // v8 : synchronisation du workflow de validation
 
   @override
   MigrationStrategy get migration {
@@ -103,6 +103,48 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 7) {
           await m.createTable(elevesEnAttente);
+        }
+        if (from < 8) {
+          if (!await _colonneExiste(
+            this,
+            'demandes_validation',
+            'commentaire',
+          )) {
+            await m.addColumn(
+              demandesValidation,
+              demandesValidation.commentaire,
+            );
+          }
+          if (!await _colonneExiste(
+            this,
+            'demandes_validation',
+            'creation_sync_status',
+          )) {
+            await m.addColumn(
+              demandesValidation,
+              demandesValidation.creationSyncStatus,
+            );
+          }
+          if (!await _colonneExiste(
+            this,
+            'demandes_validation',
+            'creation_sync_raison',
+          )) {
+            await m.addColumn(
+              demandesValidation,
+              demandesValidation.creationSyncRaison,
+            );
+          }
+          if (!await _colonneExiste(
+            this,
+            'demandes_validation',
+            'date_traitement',
+          )) {
+            await m.addColumn(
+              demandesValidation,
+              demandesValidation.dateTraitement,
+            );
+          }
         }
       },
     );
@@ -248,6 +290,67 @@ class AppDatabase extends _$AppDatabase {
     );
 
     if (approuver) {
+      await (update(paiements)
+            ..where((p) => p.clientUuid.equals(demande.paiementClientUuid)))
+          .write(const PaiementsCompanion(statut: Value('annule')));
+    }
+  }
+
+  Future<List<DemandeValidation>> demandesEnAttenteDeSyncCreation() {
+    return (select(demandesValidation)..where(
+          (d) =>
+              d.creationSyncStatus.equals('en_attente') |
+              d.creationSyncStatus.equals('conflit'),
+        ))
+        .get();
+  }
+
+  Future<void> appliquerResultatCreationDemande({
+    required String clientUuid,
+    required bool succes,
+    String? idServeur,
+    String? statutServeur,
+    String? raison,
+  }) async {
+    await (update(
+      demandesValidation,
+    )..where((d) => d.clientUuid.equals(clientUuid))).write(
+      DemandesValidationCompanion(
+        id: succes && idServeur != null
+            ? Value(idServeur)
+            : const Value.absent(),
+        statut: succes && statutServeur != null
+            ? Value(statutServeur)
+            : const Value.absent(),
+        creationSyncStatus: Value(succes ? 'synchronise' : 'conflit'),
+        creationSyncRaison: Value(succes ? null : raison),
+      ),
+    );
+  }
+
+  Future<List<DemandeValidation>> demandesAvecIdServeurNonTraiteesLocalement() {
+    return (select(
+      demandesValidation,
+    )..where((d) => d.id.isNotNull() & d.statut.equals('en_attente'))).get();
+  }
+
+  Future<void> appliquerTraitementDepuisServeur({
+    required String clientUuid,
+    required String statutServeur,
+    required bool approuve,
+  }) async {
+    final demande = await (select(
+      demandesValidation,
+    )..where((d) => d.clientUuid.equals(clientUuid))).getSingle();
+    await (update(
+      demandesValidation,
+    )..where((d) => d.clientUuid.equals(clientUuid))).write(
+      DemandesValidationCompanion(
+        statut: Value(statutServeur),
+        dateTraitement: Value(DateTime.now()),
+      ),
+    );
+    if (approuve) {
       await (update(paiements)
             ..where((p) => p.clientUuid.equals(demande.paiementClientUuid)))
           .write(const PaiementsCompanion(statut: Value('annule')));
