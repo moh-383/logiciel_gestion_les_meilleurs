@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from core.models import Site
+
 from .models import ContactParent, Echeance, Eleve
 
 
@@ -82,7 +83,7 @@ class EleveDetailSerializer(EleveSerializer):
 
         montant_du_total = sum(
             (e.montant_du for e in echeances),
-            Decimal("0")
+            Decimal(0)
         )
 
         montant_paye_total = (
@@ -91,7 +92,7 @@ class EleveDetailSerializer(EleveSerializer):
             .aggregate(
                 total=Sum("paiements__montant")
             )["total"]
-            or Decimal("0")
+            or Decimal(0)
         )
 
         statuts = {e.statut for e in echeances}

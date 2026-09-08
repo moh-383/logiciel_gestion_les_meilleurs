@@ -1,8 +1,15 @@
 from django.urls import path
 
-from .views import (DemandeAnnulationView, DemandeValidationDetailView, DemandesValidationView,
-                    PaiementCreateView, PaiementsEleveView, PaiementsSiteView, PaiementsSyncView,
-                    StatsPaiementsSiteView)
+from .views import (
+                    DemandeAnnulationView,
+                    DemandesValidationView,
+                    DemandeValidationDetailView,
+                    PaiementCreateView,
+                    PaiementsEleveView,
+                    PaiementsSiteView,
+                    PaiementsSyncView,
+                    StatsPaiementsSiteView,
+)
 
 urlpatterns = [
     path("paiements", PaiementCreateView.as_view()),

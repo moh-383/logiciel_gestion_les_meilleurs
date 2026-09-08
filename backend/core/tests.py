@@ -2,6 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 
 from accounts.models import Utilisateur
+
 from .models import Permission, Poste
 
 

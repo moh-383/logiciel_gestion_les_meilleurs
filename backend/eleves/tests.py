@@ -1,6 +1,7 @@
-import datetime
+
 from decimal import Decimal
 
+from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from accounts.models import Utilisateur
@@ -78,7 +79,7 @@ class EleveApiTests(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertRegex(
             response.data["matricule"],
-            rf"^ELV-{datetime.date.today().year}-\d{{3}}$",
+            rf"^ELV-{timezone.localdate().year}-\d{{3}}$",
         )
 
     def test_creation_dans_un_autre_site_est_refusee(self):
@@ -157,7 +158,7 @@ class EleveApiTests(APITestCase):
         self.assertEqual(response.data["resultats"][0]["statut"], "cree")
         self.assertRegex(
             Eleve.objects.get(client_uuid=client_uuid).matricule,
-            rf"^ELV-{datetime.date.today().year}-\d{{3}}$",
+            rf"^ELV-{timezone.localdate().year}-\d{{3}}$",
         )
 
     def test_sync_meme_client_uuid_ne_cree_pas_de_doublon(self):
@@ -375,14 +376,14 @@ class EleveResumeFinancierApiTests(APITestCase):
 
         echeance_soldee = Echeance.objects.create(
             eleve=self.eleve,
-            montant_du=Decimal("15000"),
+            montant_du=Decimal(15000),
             date_echeance="2026-01-01",
             statut="a_jour",
         )
 
         echeance_retard = Echeance.objects.create(
             eleve=self.eleve,
-            montant_du=Decimal("30000"),
+            montant_du=Decimal(30000),
             date_echeance="2026-08-01",
             statut="retard",
         )
@@ -390,7 +391,7 @@ class EleveResumeFinancierApiTests(APITestCase):
         Paiement.objects.create(
             client_uuid="11111111-1111-1111-1111-111111111111",
             echeance=echeance_soldee,
-            montant=Decimal("15000"),
+            montant=Decimal(15000),
             mode_paiement="especes",
             date_paiement="2026-01-05T10:00:00Z",
             saisi_par=self.user,
@@ -400,7 +401,7 @@ class EleveResumeFinancierApiTests(APITestCase):
         Paiement.objects.create(
             client_uuid="22222222-2222-2222-2222-222222222222",
             echeance=echeance_retard,
-            montant=Decimal("5000"),
+            montant=Decimal(5000),
             mode_paiement="especes",
             date_paiement="2026-08-10T10:00:00Z",
             saisi_par=self.user,
@@ -418,15 +419,15 @@ class EleveResumeFinancierApiTests(APITestCase):
 
         self.assertEqual(
             Decimal(resume["montant_du_total"]),
-            Decimal("45000"),
+            Decimal(45000),
         )
         self.assertEqual(
             Decimal(resume["montant_paye_total"]),
-            Decimal("20000"),
+            Decimal(20000),
         )
         self.assertEqual(
             Decimal(resume["solde_restant"]),
-            Decimal("25000"),
+            Decimal(25000),
         )
         self.assertEqual(
             resume["statut_global"],
