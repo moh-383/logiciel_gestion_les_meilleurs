@@ -1,4 +1,4 @@
-# Guide de test — API Django et Paiements
+# Guide de test : API Django et Paiements
 
 Ce guide permet de vérifier le backend sans Flutter ni PostgreSQL, grâce à une
 base SQLite locale temporaire. **SQLite est seulement un mode de test** : le

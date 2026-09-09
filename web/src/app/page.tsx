@@ -101,7 +101,7 @@ export default function Home() {
     return (
       <main className="login-shell">
         <section className="login-panel">
-          <div className="brand-mark">LM</div>
+          <img src="/logo-mark.png" alt="Les meilleurs" className="brand-mark" />
           <p className="eyebrow">Pilotage scolaire</p>
           <h1>Vue direction</h1>
           <p className="muted">Connecte-toi pour suivre les sites et le recouvrement.</p>
@@ -128,7 +128,10 @@ export default function Home() {
   return (
     <main className="dashboard-shell">
       <header className="topbar">
-        <div><p className="eyebrow">Les meilleurs · direction</p><h1>Tableau de pilotage</h1></div>
+          <div className="topbar-brand">
+          <img src="/logo-mark.png" alt="Les meilleurs" className="topbar-logo" />
+          <div><p className="eyebrow">Les meilleurs · direction</p><h1>Tableau de pilotage</h1></div>
+          </div>
         <button className="button-quiet" onClick={deconnecter}>Déconnexion</button>
       </header>
       <section className="dashboard-content">
