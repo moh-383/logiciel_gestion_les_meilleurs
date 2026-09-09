@@ -82,11 +82,61 @@ class AdministrationRepository {
     );
   }
 
-  Future<void> creerPoste({required String nom}) async {}
+  /// Crée un nouveau poste. `tous_sites` reste à `false` par défaut côté
+  /// serveur (modèle `Poste`) — pas d'option dans l'UI actuelle pour le
+  /// définir à la création, ce qui est cohérent avec le MVP : un poste de
+  /// direction se configure ensuite, pas à la création rapide.
+  Future<void> creerPoste({required String nom}) async {
+    await dio.post('/postes', data: {'nom': nom});
+  }
 
-  Future<void> creerSite({required String nom}) async {}
+  /// Crée un nouveau site. `adresse`, `capacite`, `responsable` sont
+  /// optionnels côté backend (voir `core/serializers.py::SiteSerializer`),
+  /// donc `nom` seul suffit pour le formulaire rapide actuel.
+  Future<void> creerSite({required String nom}) async {
+    await dio.post('/sites', data: {'nom': nom});
+  }
 
-  Future<void> modifierUtilisateur(String id, {required String nom, required String telephone, String? posteId, String? siteId, required bool actif, required String motDePasse}) async {}
+  /// IMPORTANT : `mot_de_passe` n'est pas un champ déclaré du serializer
+  /// (voir `accounts/serializers.py::UtilisateurSerializer.create`), il
+  /// est lu directement depuis le corps brut de la requête — d'où son
+  /// envoi tel quel ici plutôt que via un champ `password` classique.
+  Future<void> creerUtilisateur({
+    required String nom,
+    required String telephone,
+    required String motDePasse,
+    String? posteId,
+    String? siteId,
+  }) async {
+    await dio.post('/utilisateurs', data: {
+      'nom': nom,
+      'telephone': telephone,
+      'mot_de_passe': motDePasse,
+      'poste_id': ?posteId,
+      'site_id': ?siteId,
+    });
+  }
 
-  Future<void> creerUtilisateur({required String nom, required String telephone, required String motDePasse, String? posteId, String? siteId}) async {}
+  /// `motDePasse` vide = "ne pas changer le mot de passe" (cohérent avec
+  /// le placeholder de l'écran de modification). On ne l'envoie que s'il
+  /// est renseigné, pour ne jamais écraser silencieusement un mot de
+  /// passe existant par une valeur vide.
+  Future<void> modifierUtilisateur(
+    String id, {
+    required String nom,
+    required String telephone,
+    String? posteId,
+    String? siteId,
+    required bool actif,
+    required String motDePasse,
+  }) async {
+    await dio.patch('/utilisateurs/$id', data: {
+      'nom': nom,
+      'telephone': telephone,
+      'is_active': actif,
+      'poste_id': ?posteId,
+      'site_id': ?siteId,
+      if (motDePasse.isNotEmpty) 'mot_de_passe': motDePasse,
+    });
+  }
 }
