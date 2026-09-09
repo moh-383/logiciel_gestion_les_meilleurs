@@ -81,4 +81,12 @@ class AdministrationRepository {
       },
     );
   }
+
+  Future<void> creerPoste({required String nom}) async {}
+
+  Future<void> creerSite({required String nom}) async {}
+
+  Future<void> modifierUtilisateur(String id, {required String nom, required String telephone, String? posteId, String? siteId, required bool actif, required String motDePasse}) async {}
+
+  Future<void> creerUtilisateur({required String nom, required String telephone, required String motDePasse, String? posteId, String? siteId}) async {}
 }

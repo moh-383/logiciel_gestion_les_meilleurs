@@ -172,8 +172,9 @@ class SyncService {
 
   String _messageErreur(DioException erreur) {
     final data = erreur.response?.data;
-    if (data is Map && data['message'] is String)
+    if (data is Map && data['message'] is String) {
       return data['message'] as String;
+    }
     return erreur.message ?? 'Le serveur est inaccessible.';
   }
 }

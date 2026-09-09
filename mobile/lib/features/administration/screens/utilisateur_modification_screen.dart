@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/poste.dart';
 import '../models/site.dart';
-import '../models/utilisateur.dart';
+import '../models/utilisateur_resume.dart';
 import '../providers/administration_providers.dart';
 
 class UtilisateurModificationScreen extends ConsumerStatefulWidget {
-  final Utilisateur utilisateur;
+  final UtilisateurResume utilisateur;
 
   const UtilisateurModificationScreen({
     super.key,
@@ -48,7 +48,7 @@ class _UtilisateurModificationScreenState
 
     _posteId = widget.utilisateur.posteId;
     _siteId = widget.utilisateur.siteId;
-    _actif = widget.utilisateur.isActive;
+    _actif = widget.utilisateur.actif;
   }
 
   @override
@@ -71,20 +71,21 @@ class _UtilisateurModificationScreenState
     try {
       await ref
           .read(administrationRepositoryProvider)
-
-.modifierUtilisateur(
-  widget.utilisateur.id,
-  nom: _nomController.text.trim(),
-  telephone: _telephoneController.text.trim(),
-  posteId: _posteId,
-  siteId: _siteId,
-  actif: _actif,
-  motDePasse: _motDePasseController.text,
-);
+          .modifierUtilisateur(
+            widget.utilisateur.id,
+            nom: _nomController.text.trim(),
+            telephone: _telephoneController.text.trim(),
+            posteId: _posteId,
+            siteId: _siteId,
+            actif: _actif,
+            motDePasse: _motDePasseController.text,
+          );
 
       ref.invalidate(utilisateursProvider);
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -96,7 +97,9 @@ class _UtilisateurModificationScreenState
 
       Navigator.pop(context);
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -180,8 +183,7 @@ class _UtilisateurModificationScreenState
                   ),
                   onPressed: () {
                     setState(() {
-                      _motDePasseVisible =
-                          !_motDePasseVisible;
+                      _motDePasseVisible = !_motDePasseVisible;
                     });
                   },
                 ),
@@ -199,6 +201,9 @@ class _UtilisateurModificationScreenState
 
             const SizedBox(height: 16),
 
+            // ============================================================
+            // POSTE
+            // ============================================================
             postesAsync.when(
               loading: () => const LinearProgressIndicator(),
               error: (error, _) => Text(
@@ -206,7 +211,11 @@ class _UtilisateurModificationScreenState
               ),
               data: (postes) {
                 return DropdownButtonFormField<String>(
-                  value: _posteId,
+                  initialValue: postes.any(
+                    (poste) => poste.id == _posteId,
+                  )
+                      ? _posteId
+                      : null,
                   decoration: const InputDecoration(
                     labelText: 'Poste',
                     border: OutlineInputBorder(),
@@ -228,6 +237,9 @@ class _UtilisateurModificationScreenState
 
             const SizedBox(height: 16),
 
+            // ============================================================
+            // SITE
+            // ============================================================
             sitesAsync.when(
               loading: () => const LinearProgressIndicator(),
               error: (error, _) => Text(
@@ -235,7 +247,11 @@ class _UtilisateurModificationScreenState
               ),
               data: (sites) {
                 return DropdownButtonFormField<String>(
-                  value: _siteId,
+                  initialValue: sites.any(
+                    (site) => site.id == _siteId,
+                  )
+                      ? _siteId
+                      : null,
                   decoration: const InputDecoration(
                     labelText: 'Site',
                     border: OutlineInputBorder(),
@@ -257,6 +273,9 @@ class _UtilisateurModificationScreenState
 
             const SizedBox(height: 16),
 
+            // ============================================================
+            // STATUT DU COMPTE
+            // ============================================================
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text(
@@ -277,6 +296,9 @@ class _UtilisateurModificationScreenState
 
             const SizedBox(height: 24),
 
+            // ============================================================
+            // ENREGISTRER
+            // ============================================================
             FilledButton.icon(
               onPressed: _modificationEnCours
                   ? null
@@ -302,3 +324,4 @@ class _UtilisateurModificationScreenState
     );
   }
 }
+

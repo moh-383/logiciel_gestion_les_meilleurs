@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// ignore: implementation_imports
+import 'package:riverpod/src/framework.dart';
 
 import '../models/poste.dart';
 import '../models/site.dart';
@@ -25,6 +27,8 @@ class _UtilisateurCreationScreenState
   String? _siteId;
   bool _creationEnCours = false;
   bool _motDePasseVisible = false;
+
+  ProviderOrFamily? get utilisateursProvider => null;
 
   @override
   void dispose() {
@@ -52,7 +56,7 @@ class _UtilisateurCreationScreenState
             siteId: _siteId,
           );
 
-      ref.invalidate(utilisateursProvider);
+      ref.invalidate(utilisateursProvider!);
 
       if (!mounted) return;
 
@@ -168,7 +172,7 @@ class _UtilisateurCreationScreenState
               ),
               data: (postes) {
                 return DropdownButtonFormField<String>(
-                  value: _posteId,
+                  initialValue: _posteId,
                   decoration: const InputDecoration(
                     labelText: 'Poste',
                     border: OutlineInputBorder(),
@@ -197,7 +201,7 @@ class _UtilisateurCreationScreenState
               ),
               data: (sites) {
                 return DropdownButtonFormField<String>(
-                  value: _siteId,
+                  initialValue: _siteId,
                   decoration: const InputDecoration(
                     labelText: 'Site',
                     border: OutlineInputBorder(),

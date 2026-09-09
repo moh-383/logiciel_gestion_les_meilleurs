@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'models/permission.dart';
+import 'models/permission_catalogue.dart';
 import 'models/poste.dart';
 import 'models/site.dart';
-import 'models/utilisateur.dart';
+import 'models/utilisateur_resume.dart';
 import 'providers/administration_providers.dart';
 import 'screens/utilisateur_creation_screen.dart';
 import 'screens/utilisateur_modification_screen.dart';
@@ -17,13 +17,15 @@ class AdministrationScreen extends ConsumerStatefulWidget {
       _AdministrationScreenState();
 }
 
-class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
+class _AdministrationScreenState
+    extends ConsumerState<AdministrationScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+
     _tabController = TabController(
       length: 4,
       vsync: this,
@@ -39,7 +41,7 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
   Future<void> _actualiser() async {
     ref.invalidate(sitesProvider);
     ref.invalidate(postesProvider);
-    ref.invalidate(permissionsProvider);
+    ref.invalidate(permissionsCatalogueProvider);
     ref.invalidate(utilisateursProvider);
   }
 
@@ -49,7 +51,9 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
       'Nom du poste',
     );
 
-    if (nom == null || nom.trim().isEmpty) return;
+    if (nom == null || nom.trim().isEmpty) {
+      return;
+    }
 
     try {
       await ref.read(administrationRepositoryProvider).creerPoste(
@@ -59,15 +63,11 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
       ref.invalidate(postesProvider);
 
       if (mounted) {
-        _afficherMessage(
-          'Poste créé avec succès.',
-        );
+        _afficherMessage('Poste créé avec succès.');
       }
     } catch (error) {
       if (mounted) {
-        _afficherErreur(
-          error.toString(),
-        );
+        _afficherErreur(error.toString());
       }
     }
   }
@@ -78,7 +78,9 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
       'Nom du site',
     );
 
-    if (nom == null || nom.trim().isEmpty) return;
+    if (nom == null || nom.trim().isEmpty) {
+      return;
+    }
 
     try {
       await ref.read(administrationRepositoryProvider).creerSite(
@@ -88,15 +90,11 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
       ref.invalidate(sitesProvider);
 
       if (mounted) {
-        _afficherMessage(
-          'Site créé avec succès.',
-        );
+        _afficherMessage('Site créé avec succès.');
       }
     } catch (error) {
       if (mounted) {
-        _afficherErreur(
-          error.toString(),
-        );
+        _afficherErreur(error.toString());
       }
     }
   }
@@ -140,7 +138,9 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
   }
 
   void _afficherMessage(String message) {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -150,7 +150,9 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
   }
 
   void _afficherErreur(String message) {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -160,8 +162,9 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
   }
 
   Future<void> _ouvrirModificationUtilisateur(
-    Utilisateur utilisateur,
+    UtilisateurResume utilisateur,
   ) async {
+    
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -178,8 +181,7 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            const UtilisateurCreationScreen(),
+        builder: (_) => const UtilisateurCreationScreen(),
       ),
     );
 
@@ -190,16 +192,12 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
   Widget build(BuildContext context) {
     final sites = ref.watch(sitesProvider);
     final postes = ref.watch(postesProvider);
-    final permissions = ref.watch(permissionsProvider);
-    final utilisateurs = ref.watch(
-      utilisateursProvider,
-    );
+    final permissions = ref.watch(permissionsCatalogueProvider);
+    final utilisateurs = ref.watch(utilisateursProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Administration',
-        ),
+        title: const Text('Administration'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -213,6 +211,9 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
+          // ============================================================
+          // SITES
+          // ============================================================
           _ConstruireListe<Site>(
             asyncValue: sites,
             titre: (site) => site.nom,
@@ -222,6 +223,10 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
             icone: Icons.location_on,
             onRefresh: _actualiser,
           ),
+
+          // ============================================================
+          // POSTES
+          // ============================================================
           _ConstruireListe<Poste>(
             asyncValue: postes,
             titre: (poste) => poste.nom,
@@ -231,13 +236,21 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
             icone: Icons.badge,
             onRefresh: _actualiser,
           ),
-          _ConstruireListe<Permission>(
+
+          // ============================================================
+          // PERMISSIONS
+          // ============================================================
+          _ConstruireListe<PermissionCatalogue>(
             asyncValue: permissions,
             titre: (permission) => permission.libelle,
             sousTitre: (permission) => permission.code,
             icone: Icons.lock,
             onRefresh: _actualiser,
           ),
+
+          // ============================================================
+          // UTILISATEURS
+          // ============================================================
           utilisateurs.when(
             loading: () => const Center(
               child: CircularProgressIndicator(),
@@ -245,15 +258,13 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
             error: (error, _) => RefreshIndicator(
               onRefresh: _actualiser,
               child: ListView(
-                physics:
-                    const AlwaysScrollableScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   SizedBox(
                     height: 300,
                     child: Center(
                       child: Padding(
-                        padding:
-                            const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(24),
                         child: Text(
                           'Erreur : $error',
                           textAlign: TextAlign.center,
@@ -269,8 +280,7 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
                 return RefreshIndicator(
                   onRefresh: _actualiser,
                   child: ListView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     children: const [
                       SizedBox(
                         height: 300,
@@ -288,16 +298,13 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
               return RefreshIndicator(
                 onRefresh: _actualiser,
                 child: ListView.separated(
-                  padding:
-                      const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: items.length,
-                  separatorBuilder: (_, _) =>
-                      const Divider(
+                  separatorBuilder: (_, _) => const Divider(
                     height: 1,
                   ),
                   itemBuilder: (context, index) {
-                    final utilisateur =
-                        items[index];
+                    final utilisateur = items[index];
 
                     return ListTile(
                       leading: CircleAvatar(
@@ -311,15 +318,14 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
                         utilisateur.nom,
                       ),
                       subtitle: Text(
-                        '${utilisateur.telephone} • ${utilisateur.isActive ? 'Actif' : 'Inactif'}',
+                        '${utilisateur.telephone} • '
+                        '${utilisateur.isActive ? 'Actif' : 'Inactif'}',
                       ),
                       trailing: const Icon(
                         Icons.chevron_right,
                       ),
                       onTap: () =>
-                          _ouvrirModificationUtilisateur(
-                        utilisateur,
-                      ),
+                          _ouvrirModificationUtilisateur(utilisateur),
                     );
                   },
                 ),
@@ -328,11 +334,16 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
           ),
         ],
       ),
+
+      // ================================================================
+      // BOUTON D'ACTION
+      // ================================================================
       floatingActionButton: ListenableBuilder(
         listenable: _tabController,
         builder: (context, _) {
           final index = _tabController.index;
 
+          // Pas de bouton pour l'onglet Permissions.
           if (index == 2) {
             return const SizedBox.shrink();
           }
@@ -341,17 +352,15 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
             onPressed: index == 0
                 ? _creerSite
                 : index == 1
-                ? _creerPoste
-                : _ouvrirCreationUtilisateur,
-            icon: const Icon(
-              Icons.add,
-            ),
+                    ? _creerPoste
+                    : _ouvrirCreationUtilisateur,
+            icon: const Icon(Icons.add),
             label: Text(
               index == 0
                   ? 'Nouveau site'
                   : index == 1
-                  ? 'Nouveau poste'
-                  : 'Nouvel utilisateur',
+                      ? 'Nouveau poste'
+                      : 'Nouvel utilisateur',
             ),
           );
         },
@@ -360,8 +369,11 @@ class _AdministrationScreenState extends ConsumerState<AdministrationScreen>
   }
 }
 
-class _ConstruireListe<T>
-    extends StatelessWidget {
+// ============================================================================
+// WIDGET GÉNÉRIQUE POUR AFFICHER UNE LISTE
+// ============================================================================
+
+class _ConstruireListe<T> extends StatelessWidget {
   final AsyncValue<List<T>> asyncValue;
   final String Function(T item) titre;
   final String Function(T item) sousTitre;
@@ -385,15 +397,13 @@ class _ConstruireListe<T>
       error: (error, _) => RefreshIndicator(
         onRefresh: onRefresh,
         child: ListView(
-          physics:
-              const AlwaysScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           children: [
             SizedBox(
               height: 300,
               child: Center(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(24),
                   child: Text(
                     'Erreur : $error',
                     textAlign: TextAlign.center,
@@ -409,8 +419,7 @@ class _ConstruireListe<T>
           return RefreshIndicator(
             onRefresh: onRefresh,
             child: ListView(
-              physics:
-                  const AlwaysScrollableScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(),
               children: const [
                 SizedBox(
                   height: 300,
@@ -428,11 +437,9 @@ class _ConstruireListe<T>
         return RefreshIndicator(
           onRefresh: onRefresh,
           child: ListView.separated(
-            padding:
-                const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             itemCount: items.length,
-            separatorBuilder: (_, _) =>
-                const Divider(
+            separatorBuilder: (_, _) => const Divider(
               height: 1,
             ),
             itemBuilder: (context, index) {

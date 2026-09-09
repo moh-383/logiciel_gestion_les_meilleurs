@@ -25,4 +25,6 @@ class UtilisateurResume {
       actif: json['is_active'] as bool? ?? true,
     );
   }
+
+  bool get isActive => actif; // ✅ CORRIGÉ : renvoie le champ existant
 }

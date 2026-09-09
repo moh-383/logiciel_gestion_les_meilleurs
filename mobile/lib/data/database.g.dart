@@ -1646,6 +1646,40 @@ class $DemandesValidationTable extends DemandesValidation
     requiredDuringInsert: false,
     defaultValue: const Constant('en_attente'),
   );
+  static const VerificationMeta _commentaireMeta = const VerificationMeta(
+    'commentaire',
+  );
+  @override
+  late final GeneratedColumn<String> commentaire = GeneratedColumn<String>(
+    'commentaire',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _creationSyncStatusMeta =
+      const VerificationMeta('creationSyncStatus');
+  @override
+  late final GeneratedColumn<String> creationSyncStatus =
+      GeneratedColumn<String>(
+        'creation_sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('en_attente'),
+      );
+  static const VerificationMeta _creationSyncRaisonMeta =
+      const VerificationMeta('creationSyncRaison');
+  @override
+  late final GeneratedColumn<String> creationSyncRaison =
+      GeneratedColumn<String>(
+        'creation_sync_raison',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _dateDemandeMeta = const VerificationMeta(
     'dateDemande',
   );
@@ -1657,6 +1691,18 @@ class $DemandesValidationTable extends DemandesValidation
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _dateTraitementMeta = const VerificationMeta(
+    'dateTraitement',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dateTraitement =
+      GeneratedColumn<DateTime>(
+        'date_traitement',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1665,7 +1711,11 @@ class $DemandesValidationTable extends DemandesValidation
     paiementClientUuid,
     motif,
     statut,
+    commentaire,
+    creationSyncStatus,
+    creationSyncRaison,
     dateDemande,
+    dateTraitement,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1719,6 +1769,33 @@ class $DemandesValidationTable extends DemandesValidation
         statut.isAcceptableOrUnknown(data['statut']!, _statutMeta),
       );
     }
+    if (data.containsKey('commentaire')) {
+      context.handle(
+        _commentaireMeta,
+        commentaire.isAcceptableOrUnknown(
+          data['commentaire']!,
+          _commentaireMeta,
+        ),
+      );
+    }
+    if (data.containsKey('creation_sync_status')) {
+      context.handle(
+        _creationSyncStatusMeta,
+        creationSyncStatus.isAcceptableOrUnknown(
+          data['creation_sync_status']!,
+          _creationSyncStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('creation_sync_raison')) {
+      context.handle(
+        _creationSyncRaisonMeta,
+        creationSyncRaison.isAcceptableOrUnknown(
+          data['creation_sync_raison']!,
+          _creationSyncRaisonMeta,
+        ),
+      );
+    }
     if (data.containsKey('date_demande')) {
       context.handle(
         _dateDemandeMeta,
@@ -1729,6 +1806,15 @@ class $DemandesValidationTable extends DemandesValidation
       );
     } else if (isInserting) {
       context.missing(_dateDemandeMeta);
+    }
+    if (data.containsKey('date_traitement')) {
+      context.handle(
+        _dateTraitementMeta,
+        dateTraitement.isAcceptableOrUnknown(
+          data['date_traitement']!,
+          _dateTraitementMeta,
+        ),
+      );
     }
     return context;
   }
@@ -1763,10 +1849,26 @@ class $DemandesValidationTable extends DemandesValidation
         DriftSqlType.string,
         data['${effectivePrefix}statut'],
       )!,
+      commentaire: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}commentaire'],
+      ),
+      creationSyncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creation_sync_status'],
+      )!,
+      creationSyncRaison: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creation_sync_raison'],
+      ),
       dateDemande: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}date_demande'],
       )!,
+      dateTraitement: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_traitement'],
+      ),
     );
   }
 
@@ -1784,7 +1886,11 @@ class DemandeValidation extends DataClass
   final String paiementClientUuid;
   final String? motif;
   final String statut;
+  final String? commentaire;
+  final String creationSyncStatus;
+  final String? creationSyncRaison;
   final DateTime dateDemande;
+  final DateTime? dateTraitement;
   const DemandeValidation({
     this.id,
     required this.clientUuid,
@@ -1792,7 +1898,11 @@ class DemandeValidation extends DataClass
     required this.paiementClientUuid,
     this.motif,
     required this.statut,
+    this.commentaire,
+    required this.creationSyncStatus,
+    this.creationSyncRaison,
     required this.dateDemande,
+    this.dateTraitement,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1807,7 +1917,17 @@ class DemandeValidation extends DataClass
       map['motif'] = Variable<String>(motif);
     }
     map['statut'] = Variable<String>(statut);
+    if (!nullToAbsent || commentaire != null) {
+      map['commentaire'] = Variable<String>(commentaire);
+    }
+    map['creation_sync_status'] = Variable<String>(creationSyncStatus);
+    if (!nullToAbsent || creationSyncRaison != null) {
+      map['creation_sync_raison'] = Variable<String>(creationSyncRaison);
+    }
     map['date_demande'] = Variable<DateTime>(dateDemande);
+    if (!nullToAbsent || dateTraitement != null) {
+      map['date_traitement'] = Variable<DateTime>(dateTraitement);
+    }
     return map;
   }
 
@@ -1821,7 +1941,17 @@ class DemandeValidation extends DataClass
           ? const Value.absent()
           : Value(motif),
       statut: Value(statut),
+      commentaire: commentaire == null && nullToAbsent
+          ? const Value.absent()
+          : Value(commentaire),
+      creationSyncStatus: Value(creationSyncStatus),
+      creationSyncRaison: creationSyncRaison == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creationSyncRaison),
       dateDemande: Value(dateDemande),
+      dateTraitement: dateTraitement == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dateTraitement),
     );
   }
 
@@ -1839,7 +1969,15 @@ class DemandeValidation extends DataClass
       ),
       motif: serializer.fromJson<String?>(json['motif']),
       statut: serializer.fromJson<String>(json['statut']),
+      commentaire: serializer.fromJson<String?>(json['commentaire']),
+      creationSyncStatus: serializer.fromJson<String>(
+        json['creationSyncStatus'],
+      ),
+      creationSyncRaison: serializer.fromJson<String?>(
+        json['creationSyncRaison'],
+      ),
       dateDemande: serializer.fromJson<DateTime>(json['dateDemande']),
+      dateTraitement: serializer.fromJson<DateTime?>(json['dateTraitement']),
     );
   }
   @override
@@ -1852,7 +1990,11 @@ class DemandeValidation extends DataClass
       'paiementClientUuid': serializer.toJson<String>(paiementClientUuid),
       'motif': serializer.toJson<String?>(motif),
       'statut': serializer.toJson<String>(statut),
+      'commentaire': serializer.toJson<String?>(commentaire),
+      'creationSyncStatus': serializer.toJson<String>(creationSyncStatus),
+      'creationSyncRaison': serializer.toJson<String?>(creationSyncRaison),
       'dateDemande': serializer.toJson<DateTime>(dateDemande),
+      'dateTraitement': serializer.toJson<DateTime?>(dateTraitement),
     };
   }
 
@@ -1863,7 +2005,11 @@ class DemandeValidation extends DataClass
     String? paiementClientUuid,
     Value<String?> motif = const Value.absent(),
     String? statut,
+    Value<String?> commentaire = const Value.absent(),
+    String? creationSyncStatus,
+    Value<String?> creationSyncRaison = const Value.absent(),
     DateTime? dateDemande,
+    Value<DateTime?> dateTraitement = const Value.absent(),
   }) => DemandeValidation(
     id: id.present ? id.value : this.id,
     clientUuid: clientUuid ?? this.clientUuid,
@@ -1871,7 +2017,15 @@ class DemandeValidation extends DataClass
     paiementClientUuid: paiementClientUuid ?? this.paiementClientUuid,
     motif: motif.present ? motif.value : this.motif,
     statut: statut ?? this.statut,
+    commentaire: commentaire.present ? commentaire.value : this.commentaire,
+    creationSyncStatus: creationSyncStatus ?? this.creationSyncStatus,
+    creationSyncRaison: creationSyncRaison.present
+        ? creationSyncRaison.value
+        : this.creationSyncRaison,
     dateDemande: dateDemande ?? this.dateDemande,
+    dateTraitement: dateTraitement.present
+        ? dateTraitement.value
+        : this.dateTraitement,
   );
   DemandeValidation copyWithCompanion(DemandesValidationCompanion data) {
     return DemandeValidation(
@@ -1887,9 +2041,21 @@ class DemandeValidation extends DataClass
           : this.paiementClientUuid,
       motif: data.motif.present ? data.motif.value : this.motif,
       statut: data.statut.present ? data.statut.value : this.statut,
+      commentaire: data.commentaire.present
+          ? data.commentaire.value
+          : this.commentaire,
+      creationSyncStatus: data.creationSyncStatus.present
+          ? data.creationSyncStatus.value
+          : this.creationSyncStatus,
+      creationSyncRaison: data.creationSyncRaison.present
+          ? data.creationSyncRaison.value
+          : this.creationSyncRaison,
       dateDemande: data.dateDemande.present
           ? data.dateDemande.value
           : this.dateDemande,
+      dateTraitement: data.dateTraitement.present
+          ? data.dateTraitement.value
+          : this.dateTraitement,
     );
   }
 
@@ -1902,7 +2068,11 @@ class DemandeValidation extends DataClass
           ..write('paiementClientUuid: $paiementClientUuid, ')
           ..write('motif: $motif, ')
           ..write('statut: $statut, ')
-          ..write('dateDemande: $dateDemande')
+          ..write('commentaire: $commentaire, ')
+          ..write('creationSyncStatus: $creationSyncStatus, ')
+          ..write('creationSyncRaison: $creationSyncRaison, ')
+          ..write('dateDemande: $dateDemande, ')
+          ..write('dateTraitement: $dateTraitement')
           ..write(')'))
         .toString();
   }
@@ -1915,7 +2085,11 @@ class DemandeValidation extends DataClass
     paiementClientUuid,
     motif,
     statut,
+    commentaire,
+    creationSyncStatus,
+    creationSyncRaison,
     dateDemande,
+    dateTraitement,
   );
   @override
   bool operator ==(Object other) =>
@@ -1927,7 +2101,11 @@ class DemandeValidation extends DataClass
           other.paiementClientUuid == this.paiementClientUuid &&
           other.motif == this.motif &&
           other.statut == this.statut &&
-          other.dateDemande == this.dateDemande);
+          other.commentaire == this.commentaire &&
+          other.creationSyncStatus == this.creationSyncStatus &&
+          other.creationSyncRaison == this.creationSyncRaison &&
+          other.dateDemande == this.dateDemande &&
+          other.dateTraitement == this.dateTraitement);
 }
 
 class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
@@ -1937,7 +2115,11 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
   final Value<String> paiementClientUuid;
   final Value<String?> motif;
   final Value<String> statut;
+  final Value<String?> commentaire;
+  final Value<String> creationSyncStatus;
+  final Value<String?> creationSyncRaison;
   final Value<DateTime> dateDemande;
+  final Value<DateTime?> dateTraitement;
   final Value<int> rowid;
   const DemandesValidationCompanion({
     this.id = const Value.absent(),
@@ -1946,7 +2128,11 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
     this.paiementClientUuid = const Value.absent(),
     this.motif = const Value.absent(),
     this.statut = const Value.absent(),
+    this.commentaire = const Value.absent(),
+    this.creationSyncStatus = const Value.absent(),
+    this.creationSyncRaison = const Value.absent(),
     this.dateDemande = const Value.absent(),
+    this.dateTraitement = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DemandesValidationCompanion.insert({
@@ -1956,7 +2142,11 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
     required String paiementClientUuid,
     this.motif = const Value.absent(),
     this.statut = const Value.absent(),
+    this.commentaire = const Value.absent(),
+    this.creationSyncStatus = const Value.absent(),
+    this.creationSyncRaison = const Value.absent(),
     required DateTime dateDemande,
+    this.dateTraitement = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientUuid = Value(clientUuid),
        paiementClientUuid = Value(paiementClientUuid),
@@ -1968,7 +2158,11 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
     Expression<String>? paiementClientUuid,
     Expression<String>? motif,
     Expression<String>? statut,
+    Expression<String>? commentaire,
+    Expression<String>? creationSyncStatus,
+    Expression<String>? creationSyncRaison,
     Expression<DateTime>? dateDemande,
+    Expression<DateTime>? dateTraitement,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1979,7 +2173,13 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
         'paiement_client_uuid': paiementClientUuid,
       if (motif != null) 'motif': motif,
       if (statut != null) 'statut': statut,
+      if (commentaire != null) 'commentaire': commentaire,
+      if (creationSyncStatus != null)
+        'creation_sync_status': creationSyncStatus,
+      if (creationSyncRaison != null)
+        'creation_sync_raison': creationSyncRaison,
       if (dateDemande != null) 'date_demande': dateDemande,
+      if (dateTraitement != null) 'date_traitement': dateTraitement,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1991,7 +2191,11 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
     Value<String>? paiementClientUuid,
     Value<String?>? motif,
     Value<String>? statut,
+    Value<String?>? commentaire,
+    Value<String>? creationSyncStatus,
+    Value<String?>? creationSyncRaison,
     Value<DateTime>? dateDemande,
+    Value<DateTime?>? dateTraitement,
     Value<int>? rowid,
   }) {
     return DemandesValidationCompanion(
@@ -2001,7 +2205,11 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
       paiementClientUuid: paiementClientUuid ?? this.paiementClientUuid,
       motif: motif ?? this.motif,
       statut: statut ?? this.statut,
+      commentaire: commentaire ?? this.commentaire,
+      creationSyncStatus: creationSyncStatus ?? this.creationSyncStatus,
+      creationSyncRaison: creationSyncRaison ?? this.creationSyncRaison,
       dateDemande: dateDemande ?? this.dateDemande,
+      dateTraitement: dateTraitement ?? this.dateTraitement,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2027,8 +2235,20 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
     if (statut.present) {
       map['statut'] = Variable<String>(statut.value);
     }
+    if (commentaire.present) {
+      map['commentaire'] = Variable<String>(commentaire.value);
+    }
+    if (creationSyncStatus.present) {
+      map['creation_sync_status'] = Variable<String>(creationSyncStatus.value);
+    }
+    if (creationSyncRaison.present) {
+      map['creation_sync_raison'] = Variable<String>(creationSyncRaison.value);
+    }
     if (dateDemande.present) {
       map['date_demande'] = Variable<DateTime>(dateDemande.value);
+    }
+    if (dateTraitement.present) {
+      map['date_traitement'] = Variable<DateTime>(dateTraitement.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -2045,7 +2265,11 @@ class DemandesValidationCompanion extends UpdateCompanion<DemandeValidation> {
           ..write('paiementClientUuid: $paiementClientUuid, ')
           ..write('motif: $motif, ')
           ..write('statut: $statut, ')
+          ..write('commentaire: $commentaire, ')
+          ..write('creationSyncStatus: $creationSyncStatus, ')
+          ..write('creationSyncRaison: $creationSyncRaison, ')
           ..write('dateDemande: $dateDemande, ')
+          ..write('dateTraitement: $dateTraitement, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3819,7 +4043,11 @@ typedef $$DemandesValidationTableCreateCompanionBuilder =
       required String paiementClientUuid,
       Value<String?> motif,
       Value<String> statut,
+      Value<String?> commentaire,
+      Value<String> creationSyncStatus,
+      Value<String?> creationSyncRaison,
       required DateTime dateDemande,
+      Value<DateTime?> dateTraitement,
       Value<int> rowid,
     });
 typedef $$DemandesValidationTableUpdateCompanionBuilder =
@@ -3830,7 +4058,11 @@ typedef $$DemandesValidationTableUpdateCompanionBuilder =
       Value<String> paiementClientUuid,
       Value<String?> motif,
       Value<String> statut,
+      Value<String?> commentaire,
+      Value<String> creationSyncStatus,
+      Value<String?> creationSyncRaison,
       Value<DateTime> dateDemande,
+      Value<DateTime?> dateTraitement,
       Value<int> rowid,
     });
 
@@ -3873,8 +4105,28 @@ class $$DemandesValidationTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get commentaire => $composableBuilder(
+    column: $table.commentaire,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creationSyncStatus => $composableBuilder(
+    column: $table.creationSyncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creationSyncRaison => $composableBuilder(
+    column: $table.creationSyncRaison,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get dateDemande => $composableBuilder(
     column: $table.dateDemande,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateTraitement => $composableBuilder(
+    column: $table.dateTraitement,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3918,8 +4170,28 @@ class $$DemandesValidationTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get commentaire => $composableBuilder(
+    column: $table.commentaire,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creationSyncStatus => $composableBuilder(
+    column: $table.creationSyncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creationSyncRaison => $composableBuilder(
+    column: $table.creationSyncRaison,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get dateDemande => $composableBuilder(
     column: $table.dateDemande,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateTraitement => $composableBuilder(
+    column: $table.dateTraitement,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -3957,8 +4229,28 @@ class $$DemandesValidationTableAnnotationComposer
   GeneratedColumn<String> get statut =>
       $composableBuilder(column: $table.statut, builder: (column) => column);
 
+  GeneratedColumn<String> get commentaire => $composableBuilder(
+    column: $table.commentaire,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get creationSyncStatus => $composableBuilder(
+    column: $table.creationSyncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get creationSyncRaison => $composableBuilder(
+    column: $table.creationSyncRaison,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get dateDemande => $composableBuilder(
     column: $table.dateDemande,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dateTraitement => $composableBuilder(
+    column: $table.dateTraitement,
     builder: (column) => column,
   );
 }
@@ -4009,7 +4301,11 @@ class $$DemandesValidationTableTableManager
                 Value<String> paiementClientUuid = const Value.absent(),
                 Value<String?> motif = const Value.absent(),
                 Value<String> statut = const Value.absent(),
+                Value<String?> commentaire = const Value.absent(),
+                Value<String> creationSyncStatus = const Value.absent(),
+                Value<String?> creationSyncRaison = const Value.absent(),
                 Value<DateTime> dateDemande = const Value.absent(),
+                Value<DateTime?> dateTraitement = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DemandesValidationCompanion(
                 id: id,
@@ -4018,7 +4314,11 @@ class $$DemandesValidationTableTableManager
                 paiementClientUuid: paiementClientUuid,
                 motif: motif,
                 statut: statut,
+                commentaire: commentaire,
+                creationSyncStatus: creationSyncStatus,
+                creationSyncRaison: creationSyncRaison,
                 dateDemande: dateDemande,
+                dateTraitement: dateTraitement,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4029,7 +4329,11 @@ class $$DemandesValidationTableTableManager
                 required String paiementClientUuid,
                 Value<String?> motif = const Value.absent(),
                 Value<String> statut = const Value.absent(),
+                Value<String?> commentaire = const Value.absent(),
+                Value<String> creationSyncStatus = const Value.absent(),
+                Value<String?> creationSyncRaison = const Value.absent(),
                 required DateTime dateDemande,
+                Value<DateTime?> dateTraitement = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DemandesValidationCompanion.insert(
                 id: id,
@@ -4038,7 +4342,11 @@ class $$DemandesValidationTableTableManager
                 paiementClientUuid: paiementClientUuid,
                 motif: motif,
                 statut: statut,
+                commentaire: commentaire,
+                creationSyncStatus: creationSyncStatus,
+                creationSyncRaison: creationSyncRaison,
                 dateDemande: dateDemande,
+                dateTraitement: dateTraitement,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
