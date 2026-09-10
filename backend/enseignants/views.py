@@ -1,7 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from django.db.models import Avg, Case, Count, F, FloatField, When
+from django.db.models import Avg, Case, F, FloatField, When
 from django.db.models.functions import Cast
+from rest_framework import generics, status
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from accounts.models import Utilisateur
+from core.permissions import ALaPermissionMetier, dans_perimetre
 
 from .models import AffectationEnseignant, Creneau, Seance
 from .serializers import CreneauSerializer, SeanceCreateSerializer, SeanceSerializer
@@ -67,8 +74,6 @@ class SeanceCreateView(APIView):
         except AffectationEnseignant.DoesNotExist:
             raise ValidationError({"affectation_id": "Affectation introuvable."})
 
-        # Un enseignant ne peut déclarer une séance que sur SA PROPRE
-        # affectation — jamais au nom d'un collègue.
         if affectation.enseignant_id != request.user.id:
             raise PermissionDenied("Cette affectation ne vous appartient pas.")
 

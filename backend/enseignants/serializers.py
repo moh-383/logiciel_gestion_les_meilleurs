@@ -1,4 +1,4 @@
-from rest_framework.exceptions import ValidationError
+from rest_framework import serializers
 
 from .models import Creneau, Seance
 
@@ -26,6 +26,8 @@ class SeanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seance
-        fields = ("id", "affectation_id", "creneau_id", "date_seance", "statut", "nb_presents", "nb_absents", "commentaire")
+        fields = (
+            "id", "affectation_id", "creneau_id", "date_seance",
+            "statut", "nb_presents", "nb_absents", "commentaire",
+        )
         read_only_fields = ("id",)
-        

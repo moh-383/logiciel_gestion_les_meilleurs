@@ -1,3 +1,5 @@
+from django.urls import path
+
 from .views import (
     CreneauDetailView,
     CreneauxView,
@@ -6,7 +8,7 @@ from .views import (
     SeanceCreateView,
 )
 
-urlpatterns += [
+urlpatterns = [
     path("affectations/<uuid:pk>/creneaux", CreneauxView.as_view()),
     path("creneaux/<uuid:pk>", CreneauDetailView.as_view()),
     path("mon-planning", MonPlanningView.as_view()),
