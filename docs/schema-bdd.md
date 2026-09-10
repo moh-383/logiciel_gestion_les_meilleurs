@@ -160,3 +160,15 @@ Table générique pour le workflow d'approbation des actions sensibles (ex. annu
 - **Cloisonnement par site** : toute requête émise par un utilisateur dont le poste n'a pas `tous_sites = true` doit être filtrée par son `site_id` côté serveur, jamais laissé au seul contrôle de l'interface.
 - **Recalcul du statut d'échéance** : à faire via un trigger DB ou une logique applicative déclenchée à chaque nouveau paiement, pas en calcul à la volée à chaque lecture (performance).
 - **Synchronisation offline** : `PAIEMENT.sync_status` doit permettre d'identifier et de rejouer les paiements créés hors-ligne ; prévoir une stratégie de résolution de conflits si deux paiements sont créés sur la même échéance depuis deux appareils avant synchronisation.
+### `CRENEAU`
+Planning hebdomadaire récurrent, rattaché à une `AFFECTATION_ENSEIGNANT`.
+- `jour_semaine` : 0 (lundi) à 6 (dimanche).
+- `heure_debut` / `heure_fin` : horaires du créneau.
+- `actif` : désactivation logique (fin d'année scolaire, changement d'emploi du temps).
+
+### `SEANCE`
+Déclaration d'une séance de cours par l'enseignant, base des rapports mensuels.
+- `affectation_id` → `AFFECTATION_ENSEIGNANT`.
+- `creneau_id` → `CRENEAU`, nullable (rattrapage hors planning fixe).
+- `statut` : `tenue` / `annulee`.
+- `nb_presents` / `nb_absents` : comptage global, **pas de présence nominative** — l'enseignant n'a pas accès à la fiche élève (décision V2 déjà actée).
