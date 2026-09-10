@@ -22,8 +22,9 @@ class ResultatImport {
   bool get succes => erreur == null;
 }
 
-/// Récupère les élèves et échéances du site de l'utilisateur connecté
-/// (`GET /eleves`, `GET /sites/{id}/echeances`) et les upsert dans Drift.
+/// Récupère les élèves, échéances et échanges du site de l'utilisateur connecté
+/// (`GET /eleves`, `GET /sites/{id}/echeances`, `GET /sites/{id}/echanges`)
+/// et les upsert dans Drift.
 ///
 /// IMPORTANT : ceci ne fait JAMAIS de suppression locale. Un paiement ou
 /// une demande d'annulation créés hors ligne référencent un `eleveId` /
@@ -43,6 +44,7 @@ class ImportService {
   Future<ResultatImport> importerDonneesDuSite() async {
     try {
       final session = await tokenStore.readSession();
+
       if (session == null) {
         return ResultatImport(
           nbEleves: 0,
@@ -50,11 +52,16 @@ class ImportService {
           erreur: 'Non connecté.',
         );
       }
+
       final siteId = session.siteId;
+
       if (siteId == null) {
         // Poste "tous_sites" (direction) : hors scope mobile secrétaire/
         // responsable de site pour l'instant — pas d'import automatique.
-        return ResultatImport(nbEleves: 0, nbEcheances: 0);
+        return ResultatImport(
+          nbEleves: 0,
+          nbEcheances: 0,
+        );
       }
 
       final eleves = await _recupererTousLesEleves();
@@ -62,6 +69,9 @@ class ImportService {
 
       final echeances = await _recupererEcheancesDuSite(siteId);
       await db.upsertEcheances(echeances);
+
+      final echanges = await _recupererEchangesDuSite(siteId);
+      await db.upsertEchanges(echanges);
 
       return ResultatImport(
         nbEleves: eleves.length,
@@ -80,11 +90,13 @@ class ImportService {
     final resultats = <ElevesCompanion>[];
     int page = 1;
     const limit = 100;
+
     while (true) {
       final reponse = await dio.get(
         '/eleves',
         queryParameters: {'page': page, 'limit': limit},
       );
+
       final data = reponse.data as Map;
       final items = (data['data'] as List).cast<Map>();
 
@@ -110,9 +122,14 @@ class ImportService {
       }
 
       final total = data['total'] as int;
-      if (items.isEmpty || page * limit >= total) break;
+
+      if (items.isEmpty || page * limit >= total) {
+        break;
+      }
+
       page++;
     }
+
     return resultats;
   }
 
@@ -122,11 +139,13 @@ class ImportService {
     final resultats = <EcheancesCompanion>[];
     int page = 1;
     const limit = 200;
+
     while (true) {
       final reponse = await dio.get(
         '/sites/$siteId/echeances',
         queryParameters: {'page': page, 'limit': limit},
       );
+
       final data = reponse.data as Map;
       final items = (data['data'] as List).cast<Map>();
 
@@ -143,17 +162,75 @@ class ImportService {
       }
 
       final total = data['total'] as int;
-      if (items.isEmpty || page * limit >= total) break;
+
+      if (items.isEmpty || page * limit >= total) {
+        break;
+      }
+
       page++;
     }
+
+    return resultats;
+  }
+
+  Future<List<EchangesCompanion>> _recupererEchangesDuSite(
+    String siteId,
+  ) async {
+    final resultats = <EchangesCompanion>[];
+    int page = 1;
+    const limit = 200;
+
+    while (true) {
+      final reponse = await dio.get(
+        '/sites/$siteId/echanges',
+        queryParameters: {
+          'page': page,
+          'limit': limit,
+        },
+      );
+
+      final data = reponse.data as Map;
+      final items = (data['data'] as List).cast<Map>();
+
+      for (final item in items) {
+        resultats.add(
+          EchangesCompanion.insert(
+            id: item['id'] as String,
+            eleveId: item['eleve'] as String,
+            typeEchange: item['type_echange'] as String,
+            titre: item['titre'] as String,
+            description: Value(
+              (item['description'] as String?) ?? '',
+            ),
+            creeParNom: Value(
+              (item['cree_par_nom'] as String?) ?? '',
+            ),
+            dateEchange: DateTime.parse(
+              item['date_echange'] as String,
+            ),
+          ),
+        );
+      }
+
+      final total = data['total'] as int;
+
+      if (items.isEmpty || page * limit >= total) {
+        break;
+      }
+
+      page++;
+    }
+
     return resultats;
   }
 
   String _messageErreur(DioException erreur) {
     final data = erreur.response?.data;
+
     if (data is Map && data['message'] is String) {
       return data['message'] as String;
     }
+
     return erreur.message ?? "Import impossible : serveur inaccessible.";
   }
 }
@@ -162,5 +239,10 @@ final importServiceProvider = Provider<ImportService>((ref) {
   final db = ref.watch(databaseProvider);
   final dio = ref.watch(dioProvider);
   final tokenStore = ref.watch(tokenStoreProvider);
-  return ImportService(db: db, dio: dio, tokenStore: tokenStore);
+
+  return ImportService(
+    db: db,
+    dio: dio,
+    tokenStore: tokenStore,
+  );
 });

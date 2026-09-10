@@ -104,3 +104,35 @@ class ElevesEnAttente extends Table {
   @override
   Set<Column> get primaryKey => {clientUuid};
 }
+
+class Echanges extends Table {
+  TextColumn get id => text()();
+  TextColumn get eleveId => text()();
+  TextColumn get typeEchange => text()();
+  TextColumn get titre => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  TextColumn get creeParNom => text().withDefault(const Constant(''))();
+  DateTimeColumn get dateEchange => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Échanges créés hors ligne, pas encore confirmés — même distinction
+/// que ElevesEnAttente vs Eleves.
+@DataClassName('EchangeEnAttente')
+class EchangesEnAttente extends Table {
+  TextColumn get id => text().nullable()();
+  TextColumn get clientUuid => text()();
+  TextColumn get eleveId => text()();
+  TextColumn get typeEchange => text()();
+  TextColumn get titre => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  DateTimeColumn get dateEchange => dateTime()();
+  TextColumn get syncStatus => text().withDefault(const Constant('en_attente'))();
+  TextColumn get syncRaison => text().nullable()();
+  DateTimeColumn get dateCreationLocale => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {clientUuid};
+}

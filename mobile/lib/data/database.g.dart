@@ -3202,6 +3202,1117 @@ class ElevesEnAttenteCompanion extends UpdateCompanion<EleveEnAttente> {
   }
 }
 
+class $EchangesTable extends Echanges with TableInfo<$EchangesTable, Echange> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EchangesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _eleveIdMeta = const VerificationMeta(
+    'eleveId',
+  );
+  @override
+  late final GeneratedColumn<String> eleveId = GeneratedColumn<String>(
+    'eleve_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeEchangeMeta = const VerificationMeta(
+    'typeEchange',
+  );
+  @override
+  late final GeneratedColumn<String> typeEchange = GeneratedColumn<String>(
+    'type_echange',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titreMeta = const VerificationMeta('titre');
+  @override
+  late final GeneratedColumn<String> titre = GeneratedColumn<String>(
+    'titre',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _creeParNomMeta = const VerificationMeta(
+    'creeParNom',
+  );
+  @override
+  late final GeneratedColumn<String> creeParNom = GeneratedColumn<String>(
+    'cree_par_nom',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dateEchangeMeta = const VerificationMeta(
+    'dateEchange',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dateEchange = GeneratedColumn<DateTime>(
+    'date_echange',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    eleveId,
+    typeEchange,
+    titre,
+    description,
+    creeParNom,
+    dateEchange,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'echanges';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Echange> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('eleve_id')) {
+      context.handle(
+        _eleveIdMeta,
+        eleveId.isAcceptableOrUnknown(data['eleve_id']!, _eleveIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eleveIdMeta);
+    }
+    if (data.containsKey('type_echange')) {
+      context.handle(
+        _typeEchangeMeta,
+        typeEchange.isAcceptableOrUnknown(
+          data['type_echange']!,
+          _typeEchangeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_typeEchangeMeta);
+    }
+    if (data.containsKey('titre')) {
+      context.handle(
+        _titreMeta,
+        titre.isAcceptableOrUnknown(data['titre']!, _titreMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titreMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cree_par_nom')) {
+      context.handle(
+        _creeParNomMeta,
+        creeParNom.isAcceptableOrUnknown(
+          data['cree_par_nom']!,
+          _creeParNomMeta,
+        ),
+      );
+    }
+    if (data.containsKey('date_echange')) {
+      context.handle(
+        _dateEchangeMeta,
+        dateEchange.isAcceptableOrUnknown(
+          data['date_echange']!,
+          _dateEchangeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dateEchangeMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Echange map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Echange(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      eleveId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}eleve_id'],
+      )!,
+      typeEchange: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type_echange'],
+      )!,
+      titre: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}titre'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      creeParNom: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cree_par_nom'],
+      )!,
+      dateEchange: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_echange'],
+      )!,
+    );
+  }
+
+  @override
+  $EchangesTable createAlias(String alias) {
+    return $EchangesTable(attachedDatabase, alias);
+  }
+}
+
+class Echange extends DataClass implements Insertable<Echange> {
+  final String id;
+  final String eleveId;
+  final String typeEchange;
+  final String titre;
+  final String description;
+  final String creeParNom;
+  final DateTime dateEchange;
+  const Echange({
+    required this.id,
+    required this.eleveId,
+    required this.typeEchange,
+    required this.titre,
+    required this.description,
+    required this.creeParNom,
+    required this.dateEchange,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['eleve_id'] = Variable<String>(eleveId);
+    map['type_echange'] = Variable<String>(typeEchange);
+    map['titre'] = Variable<String>(titre);
+    map['description'] = Variable<String>(description);
+    map['cree_par_nom'] = Variable<String>(creeParNom);
+    map['date_echange'] = Variable<DateTime>(dateEchange);
+    return map;
+  }
+
+  EchangesCompanion toCompanion(bool nullToAbsent) {
+    return EchangesCompanion(
+      id: Value(id),
+      eleveId: Value(eleveId),
+      typeEchange: Value(typeEchange),
+      titre: Value(titre),
+      description: Value(description),
+      creeParNom: Value(creeParNom),
+      dateEchange: Value(dateEchange),
+    );
+  }
+
+  factory Echange.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Echange(
+      id: serializer.fromJson<String>(json['id']),
+      eleveId: serializer.fromJson<String>(json['eleveId']),
+      typeEchange: serializer.fromJson<String>(json['typeEchange']),
+      titre: serializer.fromJson<String>(json['titre']),
+      description: serializer.fromJson<String>(json['description']),
+      creeParNom: serializer.fromJson<String>(json['creeParNom']),
+      dateEchange: serializer.fromJson<DateTime>(json['dateEchange']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'eleveId': serializer.toJson<String>(eleveId),
+      'typeEchange': serializer.toJson<String>(typeEchange),
+      'titre': serializer.toJson<String>(titre),
+      'description': serializer.toJson<String>(description),
+      'creeParNom': serializer.toJson<String>(creeParNom),
+      'dateEchange': serializer.toJson<DateTime>(dateEchange),
+    };
+  }
+
+  Echange copyWith({
+    String? id,
+    String? eleveId,
+    String? typeEchange,
+    String? titre,
+    String? description,
+    String? creeParNom,
+    DateTime? dateEchange,
+  }) => Echange(
+    id: id ?? this.id,
+    eleveId: eleveId ?? this.eleveId,
+    typeEchange: typeEchange ?? this.typeEchange,
+    titre: titre ?? this.titre,
+    description: description ?? this.description,
+    creeParNom: creeParNom ?? this.creeParNom,
+    dateEchange: dateEchange ?? this.dateEchange,
+  );
+  Echange copyWithCompanion(EchangesCompanion data) {
+    return Echange(
+      id: data.id.present ? data.id.value : this.id,
+      eleveId: data.eleveId.present ? data.eleveId.value : this.eleveId,
+      typeEchange: data.typeEchange.present
+          ? data.typeEchange.value
+          : this.typeEchange,
+      titre: data.titre.present ? data.titre.value : this.titre,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      creeParNom: data.creeParNom.present
+          ? data.creeParNom.value
+          : this.creeParNom,
+      dateEchange: data.dateEchange.present
+          ? data.dateEchange.value
+          : this.dateEchange,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Echange(')
+          ..write('id: $id, ')
+          ..write('eleveId: $eleveId, ')
+          ..write('typeEchange: $typeEchange, ')
+          ..write('titre: $titre, ')
+          ..write('description: $description, ')
+          ..write('creeParNom: $creeParNom, ')
+          ..write('dateEchange: $dateEchange')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    eleveId,
+    typeEchange,
+    titre,
+    description,
+    creeParNom,
+    dateEchange,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Echange &&
+          other.id == this.id &&
+          other.eleveId == this.eleveId &&
+          other.typeEchange == this.typeEchange &&
+          other.titre == this.titre &&
+          other.description == this.description &&
+          other.creeParNom == this.creeParNom &&
+          other.dateEchange == this.dateEchange);
+}
+
+class EchangesCompanion extends UpdateCompanion<Echange> {
+  final Value<String> id;
+  final Value<String> eleveId;
+  final Value<String> typeEchange;
+  final Value<String> titre;
+  final Value<String> description;
+  final Value<String> creeParNom;
+  final Value<DateTime> dateEchange;
+  final Value<int> rowid;
+  const EchangesCompanion({
+    this.id = const Value.absent(),
+    this.eleveId = const Value.absent(),
+    this.typeEchange = const Value.absent(),
+    this.titre = const Value.absent(),
+    this.description = const Value.absent(),
+    this.creeParNom = const Value.absent(),
+    this.dateEchange = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EchangesCompanion.insert({
+    required String id,
+    required String eleveId,
+    required String typeEchange,
+    required String titre,
+    this.description = const Value.absent(),
+    this.creeParNom = const Value.absent(),
+    required DateTime dateEchange,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       eleveId = Value(eleveId),
+       typeEchange = Value(typeEchange),
+       titre = Value(titre),
+       dateEchange = Value(dateEchange);
+  static Insertable<Echange> custom({
+    Expression<String>? id,
+    Expression<String>? eleveId,
+    Expression<String>? typeEchange,
+    Expression<String>? titre,
+    Expression<String>? description,
+    Expression<String>? creeParNom,
+    Expression<DateTime>? dateEchange,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (eleveId != null) 'eleve_id': eleveId,
+      if (typeEchange != null) 'type_echange': typeEchange,
+      if (titre != null) 'titre': titre,
+      if (description != null) 'description': description,
+      if (creeParNom != null) 'cree_par_nom': creeParNom,
+      if (dateEchange != null) 'date_echange': dateEchange,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EchangesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? eleveId,
+    Value<String>? typeEchange,
+    Value<String>? titre,
+    Value<String>? description,
+    Value<String>? creeParNom,
+    Value<DateTime>? dateEchange,
+    Value<int>? rowid,
+  }) {
+    return EchangesCompanion(
+      id: id ?? this.id,
+      eleveId: eleveId ?? this.eleveId,
+      typeEchange: typeEchange ?? this.typeEchange,
+      titre: titre ?? this.titre,
+      description: description ?? this.description,
+      creeParNom: creeParNom ?? this.creeParNom,
+      dateEchange: dateEchange ?? this.dateEchange,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (eleveId.present) {
+      map['eleve_id'] = Variable<String>(eleveId.value);
+    }
+    if (typeEchange.present) {
+      map['type_echange'] = Variable<String>(typeEchange.value);
+    }
+    if (titre.present) {
+      map['titre'] = Variable<String>(titre.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (creeParNom.present) {
+      map['cree_par_nom'] = Variable<String>(creeParNom.value);
+    }
+    if (dateEchange.present) {
+      map['date_echange'] = Variable<DateTime>(dateEchange.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EchangesCompanion(')
+          ..write('id: $id, ')
+          ..write('eleveId: $eleveId, ')
+          ..write('typeEchange: $typeEchange, ')
+          ..write('titre: $titre, ')
+          ..write('description: $description, ')
+          ..write('creeParNom: $creeParNom, ')
+          ..write('dateEchange: $dateEchange, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EchangesEnAttenteTable extends EchangesEnAttente
+    with TableInfo<$EchangesEnAttenteTable, EchangeEnAttente> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EchangesEnAttenteTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _clientUuidMeta = const VerificationMeta(
+    'clientUuid',
+  );
+  @override
+  late final GeneratedColumn<String> clientUuid = GeneratedColumn<String>(
+    'client_uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _eleveIdMeta = const VerificationMeta(
+    'eleveId',
+  );
+  @override
+  late final GeneratedColumn<String> eleveId = GeneratedColumn<String>(
+    'eleve_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeEchangeMeta = const VerificationMeta(
+    'typeEchange',
+  );
+  @override
+  late final GeneratedColumn<String> typeEchange = GeneratedColumn<String>(
+    'type_echange',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titreMeta = const VerificationMeta('titre');
+  @override
+  late final GeneratedColumn<String> titre = GeneratedColumn<String>(
+    'titre',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dateEchangeMeta = const VerificationMeta(
+    'dateEchange',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dateEchange = GeneratedColumn<DateTime>(
+    'date_echange',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('en_attente'),
+  );
+  static const VerificationMeta _syncRaisonMeta = const VerificationMeta(
+    'syncRaison',
+  );
+  @override
+  late final GeneratedColumn<String> syncRaison = GeneratedColumn<String>(
+    'sync_raison',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dateCreationLocaleMeta =
+      const VerificationMeta('dateCreationLocale');
+  @override
+  late final GeneratedColumn<DateTime> dateCreationLocale =
+      GeneratedColumn<DateTime>(
+        'date_creation_locale',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    clientUuid,
+    eleveId,
+    typeEchange,
+    titre,
+    description,
+    dateEchange,
+    syncStatus,
+    syncRaison,
+    dateCreationLocale,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'echanges_en_attente';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EchangeEnAttente> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('client_uuid')) {
+      context.handle(
+        _clientUuidMeta,
+        clientUuid.isAcceptableOrUnknown(data['client_uuid']!, _clientUuidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientUuidMeta);
+    }
+    if (data.containsKey('eleve_id')) {
+      context.handle(
+        _eleveIdMeta,
+        eleveId.isAcceptableOrUnknown(data['eleve_id']!, _eleveIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eleveIdMeta);
+    }
+    if (data.containsKey('type_echange')) {
+      context.handle(
+        _typeEchangeMeta,
+        typeEchange.isAcceptableOrUnknown(
+          data['type_echange']!,
+          _typeEchangeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_typeEchangeMeta);
+    }
+    if (data.containsKey('titre')) {
+      context.handle(
+        _titreMeta,
+        titre.isAcceptableOrUnknown(data['titre']!, _titreMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titreMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('date_echange')) {
+      context.handle(
+        _dateEchangeMeta,
+        dateEchange.isAcceptableOrUnknown(
+          data['date_echange']!,
+          _dateEchangeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dateEchangeMeta);
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('sync_raison')) {
+      context.handle(
+        _syncRaisonMeta,
+        syncRaison.isAcceptableOrUnknown(data['sync_raison']!, _syncRaisonMeta),
+      );
+    }
+    if (data.containsKey('date_creation_locale')) {
+      context.handle(
+        _dateCreationLocaleMeta,
+        dateCreationLocale.isAcceptableOrUnknown(
+          data['date_creation_locale']!,
+          _dateCreationLocaleMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dateCreationLocaleMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientUuid};
+  @override
+  EchangeEnAttente map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EchangeEnAttente(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      ),
+      clientUuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_uuid'],
+      )!,
+      eleveId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}eleve_id'],
+      )!,
+      typeEchange: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type_echange'],
+      )!,
+      titre: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}titre'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      dateEchange: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_echange'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      syncRaison: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_raison'],
+      ),
+      dateCreationLocale: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_creation_locale'],
+      )!,
+    );
+  }
+
+  @override
+  $EchangesEnAttenteTable createAlias(String alias) {
+    return $EchangesEnAttenteTable(attachedDatabase, alias);
+  }
+}
+
+class EchangeEnAttente extends DataClass
+    implements Insertable<EchangeEnAttente> {
+  final String? id;
+  final String clientUuid;
+  final String eleveId;
+  final String typeEchange;
+  final String titre;
+  final String description;
+  final DateTime dateEchange;
+  final String syncStatus;
+  final String? syncRaison;
+  final DateTime dateCreationLocale;
+  const EchangeEnAttente({
+    this.id,
+    required this.clientUuid,
+    required this.eleveId,
+    required this.typeEchange,
+    required this.titre,
+    required this.description,
+    required this.dateEchange,
+    required this.syncStatus,
+    this.syncRaison,
+    required this.dateCreationLocale,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<String>(id);
+    }
+    map['client_uuid'] = Variable<String>(clientUuid);
+    map['eleve_id'] = Variable<String>(eleveId);
+    map['type_echange'] = Variable<String>(typeEchange);
+    map['titre'] = Variable<String>(titre);
+    map['description'] = Variable<String>(description);
+    map['date_echange'] = Variable<DateTime>(dateEchange);
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || syncRaison != null) {
+      map['sync_raison'] = Variable<String>(syncRaison);
+    }
+    map['date_creation_locale'] = Variable<DateTime>(dateCreationLocale);
+    return map;
+  }
+
+  EchangesEnAttenteCompanion toCompanion(bool nullToAbsent) {
+    return EchangesEnAttenteCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      clientUuid: Value(clientUuid),
+      eleveId: Value(eleveId),
+      typeEchange: Value(typeEchange),
+      titre: Value(titre),
+      description: Value(description),
+      dateEchange: Value(dateEchange),
+      syncStatus: Value(syncStatus),
+      syncRaison: syncRaison == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncRaison),
+      dateCreationLocale: Value(dateCreationLocale),
+    );
+  }
+
+  factory EchangeEnAttente.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EchangeEnAttente(
+      id: serializer.fromJson<String?>(json['id']),
+      clientUuid: serializer.fromJson<String>(json['clientUuid']),
+      eleveId: serializer.fromJson<String>(json['eleveId']),
+      typeEchange: serializer.fromJson<String>(json['typeEchange']),
+      titre: serializer.fromJson<String>(json['titre']),
+      description: serializer.fromJson<String>(json['description']),
+      dateEchange: serializer.fromJson<DateTime>(json['dateEchange']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      syncRaison: serializer.fromJson<String?>(json['syncRaison']),
+      dateCreationLocale: serializer.fromJson<DateTime>(
+        json['dateCreationLocale'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String?>(id),
+      'clientUuid': serializer.toJson<String>(clientUuid),
+      'eleveId': serializer.toJson<String>(eleveId),
+      'typeEchange': serializer.toJson<String>(typeEchange),
+      'titre': serializer.toJson<String>(titre),
+      'description': serializer.toJson<String>(description),
+      'dateEchange': serializer.toJson<DateTime>(dateEchange),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'syncRaison': serializer.toJson<String?>(syncRaison),
+      'dateCreationLocale': serializer.toJson<DateTime>(dateCreationLocale),
+    };
+  }
+
+  EchangeEnAttente copyWith({
+    Value<String?> id = const Value.absent(),
+    String? clientUuid,
+    String? eleveId,
+    String? typeEchange,
+    String? titre,
+    String? description,
+    DateTime? dateEchange,
+    String? syncStatus,
+    Value<String?> syncRaison = const Value.absent(),
+    DateTime? dateCreationLocale,
+  }) => EchangeEnAttente(
+    id: id.present ? id.value : this.id,
+    clientUuid: clientUuid ?? this.clientUuid,
+    eleveId: eleveId ?? this.eleveId,
+    typeEchange: typeEchange ?? this.typeEchange,
+    titre: titre ?? this.titre,
+    description: description ?? this.description,
+    dateEchange: dateEchange ?? this.dateEchange,
+    syncStatus: syncStatus ?? this.syncStatus,
+    syncRaison: syncRaison.present ? syncRaison.value : this.syncRaison,
+    dateCreationLocale: dateCreationLocale ?? this.dateCreationLocale,
+  );
+  EchangeEnAttente copyWithCompanion(EchangesEnAttenteCompanion data) {
+    return EchangeEnAttente(
+      id: data.id.present ? data.id.value : this.id,
+      clientUuid: data.clientUuid.present
+          ? data.clientUuid.value
+          : this.clientUuid,
+      eleveId: data.eleveId.present ? data.eleveId.value : this.eleveId,
+      typeEchange: data.typeEchange.present
+          ? data.typeEchange.value
+          : this.typeEchange,
+      titre: data.titre.present ? data.titre.value : this.titre,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      dateEchange: data.dateEchange.present
+          ? data.dateEchange.value
+          : this.dateEchange,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      syncRaison: data.syncRaison.present
+          ? data.syncRaison.value
+          : this.syncRaison,
+      dateCreationLocale: data.dateCreationLocale.present
+          ? data.dateCreationLocale.value
+          : this.dateCreationLocale,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EchangeEnAttente(')
+          ..write('id: $id, ')
+          ..write('clientUuid: $clientUuid, ')
+          ..write('eleveId: $eleveId, ')
+          ..write('typeEchange: $typeEchange, ')
+          ..write('titre: $titre, ')
+          ..write('description: $description, ')
+          ..write('dateEchange: $dateEchange, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncRaison: $syncRaison, ')
+          ..write('dateCreationLocale: $dateCreationLocale')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    clientUuid,
+    eleveId,
+    typeEchange,
+    titre,
+    description,
+    dateEchange,
+    syncStatus,
+    syncRaison,
+    dateCreationLocale,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EchangeEnAttente &&
+          other.id == this.id &&
+          other.clientUuid == this.clientUuid &&
+          other.eleveId == this.eleveId &&
+          other.typeEchange == this.typeEchange &&
+          other.titre == this.titre &&
+          other.description == this.description &&
+          other.dateEchange == this.dateEchange &&
+          other.syncStatus == this.syncStatus &&
+          other.syncRaison == this.syncRaison &&
+          other.dateCreationLocale == this.dateCreationLocale);
+}
+
+class EchangesEnAttenteCompanion extends UpdateCompanion<EchangeEnAttente> {
+  final Value<String?> id;
+  final Value<String> clientUuid;
+  final Value<String> eleveId;
+  final Value<String> typeEchange;
+  final Value<String> titre;
+  final Value<String> description;
+  final Value<DateTime> dateEchange;
+  final Value<String> syncStatus;
+  final Value<String?> syncRaison;
+  final Value<DateTime> dateCreationLocale;
+  final Value<int> rowid;
+  const EchangesEnAttenteCompanion({
+    this.id = const Value.absent(),
+    this.clientUuid = const Value.absent(),
+    this.eleveId = const Value.absent(),
+    this.typeEchange = const Value.absent(),
+    this.titre = const Value.absent(),
+    this.description = const Value.absent(),
+    this.dateEchange = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.syncRaison = const Value.absent(),
+    this.dateCreationLocale = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EchangesEnAttenteCompanion.insert({
+    this.id = const Value.absent(),
+    required String clientUuid,
+    required String eleveId,
+    required String typeEchange,
+    required String titre,
+    this.description = const Value.absent(),
+    required DateTime dateEchange,
+    this.syncStatus = const Value.absent(),
+    this.syncRaison = const Value.absent(),
+    required DateTime dateCreationLocale,
+    this.rowid = const Value.absent(),
+  }) : clientUuid = Value(clientUuid),
+       eleveId = Value(eleveId),
+       typeEchange = Value(typeEchange),
+       titre = Value(titre),
+       dateEchange = Value(dateEchange),
+       dateCreationLocale = Value(dateCreationLocale);
+  static Insertable<EchangeEnAttente> custom({
+    Expression<String>? id,
+    Expression<String>? clientUuid,
+    Expression<String>? eleveId,
+    Expression<String>? typeEchange,
+    Expression<String>? titre,
+    Expression<String>? description,
+    Expression<DateTime>? dateEchange,
+    Expression<String>? syncStatus,
+    Expression<String>? syncRaison,
+    Expression<DateTime>? dateCreationLocale,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (clientUuid != null) 'client_uuid': clientUuid,
+      if (eleveId != null) 'eleve_id': eleveId,
+      if (typeEchange != null) 'type_echange': typeEchange,
+      if (titre != null) 'titre': titre,
+      if (description != null) 'description': description,
+      if (dateEchange != null) 'date_echange': dateEchange,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (syncRaison != null) 'sync_raison': syncRaison,
+      if (dateCreationLocale != null)
+        'date_creation_locale': dateCreationLocale,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EchangesEnAttenteCompanion copyWith({
+    Value<String?>? id,
+    Value<String>? clientUuid,
+    Value<String>? eleveId,
+    Value<String>? typeEchange,
+    Value<String>? titre,
+    Value<String>? description,
+    Value<DateTime>? dateEchange,
+    Value<String>? syncStatus,
+    Value<String?>? syncRaison,
+    Value<DateTime>? dateCreationLocale,
+    Value<int>? rowid,
+  }) {
+    return EchangesEnAttenteCompanion(
+      id: id ?? this.id,
+      clientUuid: clientUuid ?? this.clientUuid,
+      eleveId: eleveId ?? this.eleveId,
+      typeEchange: typeEchange ?? this.typeEchange,
+      titre: titre ?? this.titre,
+      description: description ?? this.description,
+      dateEchange: dateEchange ?? this.dateEchange,
+      syncStatus: syncStatus ?? this.syncStatus,
+      syncRaison: syncRaison ?? this.syncRaison,
+      dateCreationLocale: dateCreationLocale ?? this.dateCreationLocale,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clientUuid.present) {
+      map['client_uuid'] = Variable<String>(clientUuid.value);
+    }
+    if (eleveId.present) {
+      map['eleve_id'] = Variable<String>(eleveId.value);
+    }
+    if (typeEchange.present) {
+      map['type_echange'] = Variable<String>(typeEchange.value);
+    }
+    if (titre.present) {
+      map['titre'] = Variable<String>(titre.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (dateEchange.present) {
+      map['date_echange'] = Variable<DateTime>(dateEchange.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (syncRaison.present) {
+      map['sync_raison'] = Variable<String>(syncRaison.value);
+    }
+    if (dateCreationLocale.present) {
+      map['date_creation_locale'] = Variable<DateTime>(
+        dateCreationLocale.value,
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EchangesEnAttenteCompanion(')
+          ..write('id: $id, ')
+          ..write('clientUuid: $clientUuid, ')
+          ..write('eleveId: $eleveId, ')
+          ..write('typeEchange: $typeEchange, ')
+          ..write('titre: $titre, ')
+          ..write('description: $description, ')
+          ..write('dateEchange: $dateEchange, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('syncRaison: $syncRaison, ')
+          ..write('dateCreationLocale: $dateCreationLocale, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3213,6 +4324,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ElevesEnAttenteTable elevesEnAttente = $ElevesEnAttenteTable(
     this,
   );
+  late final $EchangesTable echanges = $EchangesTable(this);
+  late final $EchangesEnAttenteTable echangesEnAttente =
+      $EchangesEnAttenteTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3223,6 +4337,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     paiements,
     demandesValidation,
     elevesEnAttente,
+    echanges,
+    echangesEnAttente,
   ];
 }
 
@@ -4829,6 +5945,584 @@ typedef $$ElevesEnAttenteTableProcessedTableManager =
       EleveEnAttente,
       PrefetchHooks Function()
     >;
+typedef $$EchangesTableCreateCompanionBuilder = EchangesCompanion Function({
+  required String id,
+  required String eleveId,
+  required String typeEchange,
+  required String titre,
+  Value<String> description,
+  Value<String> creeParNom,
+  required DateTime dateEchange,
+  Value<int> rowid,
+});
+typedef $$EchangesTableUpdateCompanionBuilder = EchangesCompanion Function({
+  Value<String> id,
+  Value<String> eleveId,
+  Value<String> typeEchange,
+  Value<String> titre,
+  Value<String> description,
+  Value<String> creeParNom,
+  Value<DateTime> dateEchange,
+  Value<int> rowid,
+});
+
+class $$EchangesTableFilterComposer
+    extends Composer<_$AppDatabase, $EchangesTable> {
+  $$EchangesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eleveId => $composableBuilder(
+    column: $table.eleveId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get typeEchange => $composableBuilder(
+    column: $table.typeEchange,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titre => $composableBuilder(
+    column: $table.titre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creeParNom => $composableBuilder(
+    column: $table.creeParNom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateEchange => $composableBuilder(
+    column: $table.dateEchange,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EchangesTableOrderingComposer
+    extends Composer<_$AppDatabase, $EchangesTable> {
+  $$EchangesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get eleveId => $composableBuilder(
+    column: $table.eleveId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get typeEchange => $composableBuilder(
+    column: $table.typeEchange,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titre => $composableBuilder(
+    column: $table.titre,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creeParNom => $composableBuilder(
+    column: $table.creeParNom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateEchange => $composableBuilder(
+    column: $table.dateEchange,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EchangesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EchangesTable> {
+  $$EchangesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get eleveId =>
+      $composableBuilder(column: $table.eleveId, builder: (column) => column);
+
+  GeneratedColumn<String> get typeEchange => $composableBuilder(
+    column: $table.typeEchange,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get titre =>
+      $composableBuilder(column: $table.titre, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get creeParNom => $composableBuilder(
+    column: $table.creeParNom,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dateEchange => $composableBuilder(
+    column: $table.dateEchange,
+    builder: (column) => column,
+  );
+}
+
+class $$EchangesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EchangesTable,
+          Echange,
+          $$EchangesTableFilterComposer,
+          $$EchangesTableOrderingComposer,
+          $$EchangesTableAnnotationComposer,
+          $$EchangesTableCreateCompanionBuilder,
+          $$EchangesTableUpdateCompanionBuilder,
+          (Echange, BaseReferences<_$AppDatabase, $EchangesTable, Echange>),
+          Echange,
+          PrefetchHooks Function()
+        > {
+  $$EchangesTableTableManager(_$AppDatabase db, $EchangesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EchangesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EchangesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EchangesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> eleveId = const Value.absent(),
+                Value<String> typeEchange = const Value.absent(),
+                Value<String> titre = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> creeParNom = const Value.absent(),
+                Value<DateTime> dateEchange = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EchangesCompanion(
+                id: id,
+                eleveId: eleveId,
+                typeEchange: typeEchange,
+                titre: titre,
+                description: description,
+                creeParNom: creeParNom,
+                dateEchange: dateEchange,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String eleveId,
+                required String typeEchange,
+                required String titre,
+                Value<String> description = const Value.absent(),
+                Value<String> creeParNom = const Value.absent(),
+                required DateTime dateEchange,
+                Value<int> rowid = const Value.absent(),
+              }) => EchangesCompanion.insert(
+                id: id,
+                eleveId: eleveId,
+                typeEchange: typeEchange,
+                titre: titre,
+                description: description,
+                creeParNom: creeParNom,
+                dateEchange: dateEchange,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$EchangesTable, Echange>(table),
+                  BaseReferences<_$AppDatabase, $EchangesTable, Echange>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EchangesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EchangesTable,
+      Echange,
+      $$EchangesTableFilterComposer,
+      $$EchangesTableOrderingComposer,
+      $$EchangesTableAnnotationComposer,
+      $$EchangesTableCreateCompanionBuilder,
+      $$EchangesTableUpdateCompanionBuilder,
+      (Echange, BaseReferences<_$AppDatabase, $EchangesTable, Echange>),
+      Echange,
+      PrefetchHooks Function()
+    >;
+typedef $$EchangesEnAttenteTableCreateCompanionBuilder =
+    EchangesEnAttenteCompanion Function({
+      Value<String?> id,
+      required String clientUuid,
+      required String eleveId,
+      required String typeEchange,
+      required String titre,
+      Value<String> description,
+      required DateTime dateEchange,
+      Value<String> syncStatus,
+      Value<String?> syncRaison,
+      required DateTime dateCreationLocale,
+      Value<int> rowid,
+    });
+typedef $$EchangesEnAttenteTableUpdateCompanionBuilder =
+    EchangesEnAttenteCompanion Function({
+      Value<String?> id,
+      Value<String> clientUuid,
+      Value<String> eleveId,
+      Value<String> typeEchange,
+      Value<String> titre,
+      Value<String> description,
+      Value<DateTime> dateEchange,
+      Value<String> syncStatus,
+      Value<String?> syncRaison,
+      Value<DateTime> dateCreationLocale,
+      Value<int> rowid,
+    });
+
+class $$EchangesEnAttenteTableFilterComposer
+    extends Composer<_$AppDatabase, $EchangesEnAttenteTable> {
+  $$EchangesEnAttenteTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eleveId => $composableBuilder(
+    column: $table.eleveId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get typeEchange => $composableBuilder(
+    column: $table.typeEchange,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titre => $composableBuilder(
+    column: $table.titre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateEchange => $composableBuilder(
+    column: $table.dateEchange,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateCreationLocale => $composableBuilder(
+    column: $table.dateCreationLocale,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EchangesEnAttenteTableOrderingComposer
+    extends Composer<_$AppDatabase, $EchangesEnAttenteTable> {
+  $$EchangesEnAttenteTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get eleveId => $composableBuilder(
+    column: $table.eleveId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get typeEchange => $composableBuilder(
+    column: $table.typeEchange,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titre => $composableBuilder(
+    column: $table.titre,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateEchange => $composableBuilder(
+    column: $table.dateEchange,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateCreationLocale => $composableBuilder(
+    column: $table.dateCreationLocale,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EchangesEnAttenteTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EchangesEnAttenteTable> {
+  $$EchangesEnAttenteTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clientUuid => $composableBuilder(
+    column: $table.clientUuid,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get eleveId =>
+      $composableBuilder(column: $table.eleveId, builder: (column) => column);
+
+  GeneratedColumn<String> get typeEchange => $composableBuilder(
+    column: $table.typeEchange,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get titre =>
+      $composableBuilder(column: $table.titre, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dateEchange => $composableBuilder(
+    column: $table.dateEchange,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncRaison => $composableBuilder(
+    column: $table.syncRaison,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dateCreationLocale => $composableBuilder(
+    column: $table.dateCreationLocale,
+    builder: (column) => column,
+  );
+}
+
+class $$EchangesEnAttenteTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EchangesEnAttenteTable,
+          EchangeEnAttente,
+          $$EchangesEnAttenteTableFilterComposer,
+          $$EchangesEnAttenteTableOrderingComposer,
+          $$EchangesEnAttenteTableAnnotationComposer,
+          $$EchangesEnAttenteTableCreateCompanionBuilder,
+          $$EchangesEnAttenteTableUpdateCompanionBuilder,
+          (
+            EchangeEnAttente,
+            BaseReferences<
+              _$AppDatabase,
+              $EchangesEnAttenteTable,
+              EchangeEnAttente
+            >,
+          ),
+          EchangeEnAttente,
+          PrefetchHooks Function()
+        > {
+  $$EchangesEnAttenteTableTableManager(
+    _$AppDatabase db,
+    $EchangesEnAttenteTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EchangesEnAttenteTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EchangesEnAttenteTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EchangesEnAttenteTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String?> id = const Value.absent(),
+                Value<String> clientUuid = const Value.absent(),
+                Value<String> eleveId = const Value.absent(),
+                Value<String> typeEchange = const Value.absent(),
+                Value<String> titre = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<DateTime> dateEchange = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncRaison = const Value.absent(),
+                Value<DateTime> dateCreationLocale = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EchangesEnAttenteCompanion(
+                id: id,
+                clientUuid: clientUuid,
+                eleveId: eleveId,
+                typeEchange: typeEchange,
+                titre: titre,
+                description: description,
+                dateEchange: dateEchange,
+                syncStatus: syncStatus,
+                syncRaison: syncRaison,
+                dateCreationLocale: dateCreationLocale,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> id = const Value.absent(),
+                required String clientUuid,
+                required String eleveId,
+                required String typeEchange,
+                required String titre,
+                Value<String> description = const Value.absent(),
+                required DateTime dateEchange,
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> syncRaison = const Value.absent(),
+                required DateTime dateCreationLocale,
+                Value<int> rowid = const Value.absent(),
+              }) => EchangesEnAttenteCompanion.insert(
+                id: id,
+                clientUuid: clientUuid,
+                eleveId: eleveId,
+                typeEchange: typeEchange,
+                titre: titre,
+                description: description,
+                dateEchange: dateEchange,
+                syncStatus: syncStatus,
+                syncRaison: syncRaison,
+                dateCreationLocale: dateCreationLocale,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$EchangesEnAttenteTable, EchangeEnAttente>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $EchangesEnAttenteTable,
+                    EchangeEnAttente
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EchangesEnAttenteTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EchangesEnAttenteTable,
+      EchangeEnAttente,
+      $$EchangesEnAttenteTableFilterComposer,
+      $$EchangesEnAttenteTableOrderingComposer,
+      $$EchangesEnAttenteTableAnnotationComposer,
+      $$EchangesEnAttenteTableCreateCompanionBuilder,
+      $$EchangesEnAttenteTableUpdateCompanionBuilder,
+      (
+        EchangeEnAttente,
+        BaseReferences<
+          _$AppDatabase,
+          $EchangesEnAttenteTable,
+          EchangeEnAttente
+        >,
+      ),
+      EchangeEnAttente,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4843,4 +6537,8 @@ class $AppDatabaseManager {
       $$DemandesValidationTableTableManager(_db, _db.demandesValidation);
   $$ElevesEnAttenteTableTableManager get elevesEnAttente =>
       $$ElevesEnAttenteTableTableManager(_db, _db.elevesEnAttente);
+  $$EchangesTableTableManager get echanges =>
+      $$EchangesTableTableManager(_db, _db.echanges);
+  $$EchangesEnAttenteTableTableManager get echangesEnAttente =>
+      $$EchangesEnAttenteTableTableManager(_db, _db.echangesEnAttente);
 }

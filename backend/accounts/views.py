@@ -104,3 +104,17 @@ class UtilisateurViewSet(viewsets.ModelViewSet):
             )
 
         serializer.save()
+from .serializers import FcmTokenSerializer  # à ajouter à l'import existant
+
+
+class MonTokenFcmView(APIView):
+    """Volontairement séparé de PATCH /utilisateurs/{id} : sinon il faudrait
+    la permission gerer_comptes juste pour enregistrer son propre token,
+    ce qui exclurait secrétaires et responsables de site."""
+
+    def patch(self, request):
+        serializer = FcmTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        request.user.fcm_token = serializer.validated_data["fcm_token"] or None
+        request.user.save(update_fields=["fcm_token"])
+        return Response(status=status.HTTP_204_NO_CONTENT)

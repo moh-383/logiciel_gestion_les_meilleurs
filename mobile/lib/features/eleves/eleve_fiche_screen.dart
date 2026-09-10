@@ -5,10 +5,10 @@ import 'data/eleve_repository.dart';
 import 'echeance_creation_screen.dart';
 import 'eleve_edit_screen.dart';
 import 'providers/eleve_providers.dart';
+import 'providers/echange_providers.dart';
+import 'echange_creation_screen.dart';
 
-/// Fiche élève (maquette écran 3), version MVP : onglets Infos et
-/// Paiements uniquement. Présence/Historique dépendent du module
-/// Enseignants (V2, Sprint 8) et ne sont pas encore branchés.
+/// Fiche élève avec les onglets Infos, Paiements et Historique.
 class EleveFicheScreen extends ConsumerWidget {
   final EleveAffichable eleve;
 
@@ -17,7 +17,7 @@ class EleveFicheScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text('${eleve.prenom} ${eleve.nom}'),
@@ -50,6 +50,7 @@ class EleveFicheScreen extends ConsumerWidget {
             tabs: [
               Tab(text: 'Infos'),
               Tab(text: 'Paiements'),
+              Tab(text: 'Historique'),
             ],
           ),
         ),
@@ -57,6 +58,7 @@ class EleveFicheScreen extends ConsumerWidget {
           children: [
             _OngletInfos(eleve: eleve),
             _OngletPaiements(eleve: eleve, ref: ref),
+            _OngletHistorique(eleve: eleve),
           ],
         ),
       ),
@@ -66,6 +68,7 @@ class EleveFicheScreen extends ConsumerWidget {
 
 class _OngletInfos extends StatelessWidget {
   final EleveAffichable eleve;
+
   const _OngletInfos({required this.eleve});
 
   @override
@@ -97,14 +100,20 @@ class _OngletInfos extends StatelessWidget {
             ),
           ),
         _section('Informations personnelles', [
-          _ligne('Nom complet', '${eleve.prenom} ${eleve.nom}'),
+          _ligne(
+            'Nom complet',
+            '${eleve.prenom} ${eleve.nom}',
+          ),
           _ligne(
             'Matricule',
             eleve.matricule.isEmpty
                 ? 'En attente d\'attribution'
                 : eleve.matricule,
           ),
-          _ligne('Sexe', eleve.sexe == 'F' ? 'Féminin' : 'Masculin'),
+          _ligne(
+            'Sexe',
+            eleve.sexe == 'F' ? 'Féminin' : 'Masculin',
+          ),
           if (eleve.dateNaissance != null)
             _ligne(
               'Date de naissance',
@@ -151,8 +160,17 @@ class _OngletInfos extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          Text(valeur, style: const TextStyle(fontSize: 13)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+          Text(
+            valeur,
+            style: const TextStyle(fontSize: 13),
+          ),
         ],
       ),
     );
@@ -162,7 +180,11 @@ class _OngletInfos extends StatelessWidget {
 class _OngletPaiements extends StatelessWidget {
   final EleveAffichable eleve;
   final WidgetRef ref;
-  const _OngletPaiements({required this.eleve, required this.ref});
+
+  const _OngletPaiements({
+    required this.eleve,
+    required this.ref,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -183,21 +205,31 @@ class _OngletPaiements extends StatelessWidget {
     );
 
     return echeancesAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => Center(child: Text('Erreur : $err')),
+      loading: () => const Center(
+        child: CircularProgressIndicator(),
+      ),
+      error: (err, _) => Center(
+        child: Text('Erreur : $err'),
+      ),
       data: (echeances) {
         if (echeances.isEmpty) {
-          return const Center(child: Text('Aucune échéance pour cet élève'));
+          return const Center(
+            child: Text('Aucune échéance pour cet élève'),
+          );
         }
+
         return ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: echeances.length,
           separatorBuilder: (_, _) => const Divider(height: 1),
           itemBuilder: (context, index) {
             final e = echeances[index];
+
             return ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text('${e.montantDu.toStringAsFixed(0)} FCFA dû'),
+              title: Text(
+                '${e.montantDu.toStringAsFixed(0)} FCFA dû',
+              ),
               subtitle: Text(
                 'Reste : ${e.montantRestant.toStringAsFixed(0)} FCFA',
               ),
@@ -208,4 +240,102 @@ class _OngletPaiements extends StatelessWidget {
       },
     );
   }
+}
+
+class _OngletHistorique extends ConsumerWidget {
+  final EleveAffichable eleve;
+
+  const _OngletHistorique({
+    required this.eleve,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (eleve.enAttenteDeSync) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'L\'historique sera disponible une fois l\'élève confirmé par le serveur.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    final echangesAsync = ref.watch(
+      echangesDeLEleveProvider(eleve.idNavigation),
+    );
+
+    return Scaffold(
+      body: echangesAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        error: (err, _) => Center(
+          child: Text('Erreur : $err'),
+        ),
+        data: (echanges) {
+          if (echanges.isEmpty) {
+            return const Center(
+              child: Text('Aucun échange enregistré'),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: echanges.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final e = echanges[index];
+
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(_iconePour(e.typeEchange)),
+                title: Text(e.titre),
+                subtitle: Text(
+                  '${_libelle(e.typeEchange)} · ${e.creeParNom} · '
+                  '${e.dateEchange.day.toString().padLeft(2, '0')}/'
+                  '${e.dateEchange.month.toString().padLeft(2, '0')}/'
+                  '${e.dateEchange.year}'
+                  '${e.enAttenteDeSync ? ' · non synchronisé' : ''}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => EchangeCreationScreen(
+                eleveId: eleve.idNavigation,
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.add_comment_outlined),
+        label: const Text('Ajouter'),
+      ),
+    );
+  }
+
+  String _libelle(String type) => const {
+        'appel': 'Appel',
+        'reunion': 'Réunion',
+        'incident_discipline': 'Incident',
+        'remarque': 'Remarque',
+        'autre': 'Autre',
+      }[type] ??
+      type;
+
+  IconData _iconePour(String type) => switch (type) {
+        'appel' => Icons.call_outlined,
+        'reunion' => Icons.groups_outlined,
+        'incident_discipline' => Icons.warning_amber_outlined,
+        'remarque' => Icons.sticky_note_2_outlined,
+        _ => Icons.chat_bubble_outline,
+      };
 }

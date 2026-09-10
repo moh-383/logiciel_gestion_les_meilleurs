@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/fcm_service.dart';
 import 'package:mobile/features/eleves/providers/eleve_providers.dart';
 
 import '../../core/auth_service.dart';
@@ -46,6 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // l'import sera retenté à la prochaine reconnexion détectée.
       unawaited(ref.read(importServiceProvider).importerDonneesDuSite());
       unawaited(ref.read(eleveSyncServiceProvider).synchroniser());
+      unawaited(ref.read(fcmServiceProvider).enregistrerTokenCourant());
     } on DioException catch (error) {
       final data = error.response?.data;
       final message = data is Map && data['message'] is String

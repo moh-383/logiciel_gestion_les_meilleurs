@@ -50,7 +50,7 @@ Future<bool> _colonneExiste(
 }
 
 @DriftDatabase(
-  tables: [Eleves, Echeances, Paiements, DemandesValidation, ElevesEnAttente],
+  tables: [Eleves, Echeances, Paiements, DemandesValidation, ElevesEnAttente, Echanges, EchangesEnAttente],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -61,10 +61,10 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 8; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison
+  int get schemaVersion => 9; // v2 : matricule · v3 : statut paiement + demandes · v4 : sync_raison
   // v5 : note · v6 : cache élèves enrichi · v7 : file d'attente élèves
   // v8 : synchronisation du workflow de validation
-
+  // v9 : historique des échanges/incidents
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -145,6 +145,10 @@ class AppDatabase extends _$AppDatabase {
               demandesValidation.dateTraitement,
             );
           }
+        }
+        if (from < 9) {
+          await m.createTable(echanges);
+          await m.createTable(echangesEnAttente);
         }
       },
     );
@@ -358,9 +362,14 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<List<Paiement>> paiementsEnAttenteDeSync() {
+    // Inclut aussi les paiements en 'conflit' : sans ça, un paiement resté
+    // bloqué en conflit continue de compter dans le badge (voir
+    // watchNbPaiementsNonSynchronises ci-dessous, qui inclut déjà les deux
+    // statuts) mais n'est jamais retenté par le bouton "Synchroniser",
+    // donnant l'impression trompeuse que rien ne se passe.
     return (select(
       paiements,
-    )..where((p) => p.syncStatus.equals('en_attente'))).get();
+    )..where((p) => p.syncStatus.isIn(['en_attente', 'conflit']))).get();
   }
 
   Future<void> appliquerResultatSync({
@@ -413,6 +422,12 @@ class AppDatabase extends _$AppDatabase {
     if (liste.isEmpty) return;
     await batch((b) {
       b.insertAllOnConflictUpdate(echeances, liste);
+    });
+  }
+  Future<void> upsertEchanges(List<EchangesCompanion> liste) async {
+    if (liste.isEmpty) return;
+    await batch((b) {
+      b.insertAllOnConflictUpdate(echanges, liste);
     });
   }
 }

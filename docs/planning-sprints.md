@@ -51,7 +51,7 @@ Objectif : que les deux personnes partent sur des bases identiques avant d'écri
 
 Semaine tampon, volontairement prévue à l'avance : corriger les bugs remontés en sprint 6, combler les manques. Un planning sans semaine tampon est un planning qui va glisser silencieusement, autant l'assumer dès le départ.
 
-**→ Fin du MVP, environ 8 semaines après le lancement.**
+**→ Fin du MVP .**
 
 ---
 
@@ -71,21 +71,3 @@ Semaine tampon, volontairement prévue à l'avance : corriger les bugs remontés
 | 12 | Sessions courtes, inscription et tarification spécifiques | Liste des candidats Bac/BEPC, répartition des appels sans doublon |
 | 13 | Finitions et tests | Saisie des résultats, calcul des statistiques en temps réel |
 | 14 | Intégration & tests croisés | Génération automatique du visuel de statistiques (Facebook/WhatsApp) |
-
----
-
-## Résumé
-
-| Étape | Durée estimée | Fin approximative (à partir du lancement) |
-|---|---|---|
-| Sprint 0 → 7 (MVP) | 8 semaines | ~2 mois |
-| Lot 2 | 4 semaines | ~3 mois |
-| Lot 3 | 3 semaines | ~3,5 mois |
-
-Ces durées supposent un rythme régulier à temps partiel sans interruption prolongée (examens, autres engagements). En cas de semaine sans avancement, il vaut mieux décaler le planning que de compresser les sprints suivants, le rythme tenable compte plus que la date.
-
-## Rituels suggérés
-
-- **Point hebdomadaire** (30 min, début ou fin de semaine) : ce qui a été fait, ce qui bloque, objectif de la semaine suivante.
-- **Revue de code croisée** avant de fusionner dans `dev`, même à 2, surtout sur le schéma de données partagé.
-- **Démo courte** à la fin de chaque lot (MVP, lot 2, lot 3), même informelle, ça aide à garder le lien avec le besoin réel de la structure.

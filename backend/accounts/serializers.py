@@ -28,3 +28,5 @@ class UtilisateurSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+class FcmTokenSerializer(serializers.Serializer):
+    fcm_token = serializers.CharField(max_length=255, allow_blank=True)

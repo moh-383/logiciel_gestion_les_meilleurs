@@ -213,3 +213,11 @@ requête répétée avec le même `client_uuid`, le serveur répond de nouveau a
 - **Format dates/heures** : UTC + ISO 8601 (`Z`), voir Conventions générales. *(tranché le 2026-09-03)*
 - **Catalogue de permissions** : liste exhaustive dans `docs/schema-bdd.md`, section `PERMISSION`. *(tranché le 2026-09-03)*
 - **Accès enseignant à la fiche élève** : refusé par design pour la V2, seules les données pédagogiques liées à ses propres cours seront accessibles. À affiner au Sprint 8.
+
+## 8.
+
+| Méthode | Endpoint | Permission | Description |
+|---|---|---|---|
+| PATCH | `/utilisateurs/me/fcm-token` | authentifié (soi-même) | Enregistre/rafraîchit le token FCM de l'appareil courant |
+| GET | `/notifications` | `recevoir_alertes_paiement` ou `voir_finances` | Historique des notifications du site (filtrable `?type=&statut=`) |
+

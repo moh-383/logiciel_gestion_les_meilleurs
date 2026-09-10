@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "316494892451",
+    "project_id": "cours-d-appui-les-meilleurs",
+    "storage_bucket": "cours-d-appui-les-meilleurs.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316494892451:android:58799df00432f468225e16",
+        "android_client_info": {
+          "package_name": "com.CoursDAppuiLesMeilleurs.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCinY6ECTikQuTQnf8cCqHuLx1NNjJ-AzQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

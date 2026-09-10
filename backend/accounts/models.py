@@ -32,6 +32,7 @@ class Utilisateur(AbstractUser):
     nom = models.CharField(max_length=150)
     poste = models.ForeignKey("core.Poste", null=True, blank=True, on_delete=models.PROTECT, related_name="utilisateurs")
     site = models.ForeignKey("core.Site", null=True, blank=True, on_delete=models.PROTECT, related_name="utilisateurs")
+    fcm_token = models.CharField(max_length=255, null=True, blank=True)
 
     USERNAME_FIELD = "telephone"
     REQUIRED_FIELDS = ["nom"]
