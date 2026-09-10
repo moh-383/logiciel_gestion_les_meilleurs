@@ -188,7 +188,7 @@ L'app mobile stocke localement les paiements créés sans connexion. Dès que la
     { "client_uuid": "uuid-2", "statut": "conflit", "raison": "echeance_deja_soldee" }
   ]
 }
-```
+
 Un `statut: "conflit"` ne supprime pas le paiement côté serveur ni côté mobile, il reste visible pour arbitrage manuel par le responsable de site ou la direction (voir `docs/schema-bdd.md`, section sur la résolution de conflits).
 
 `note` est nullable et doit être conservée pendant la synchronisation. Pour une
@@ -213,3 +213,25 @@ requête répétée avec le même `client_uuid`, le serveur répond de nouveau a
 - **Format dates/heures** : UTC + ISO 8601 (`Z`), voir Conventions générales. *(tranché le 2026-09-03)*
 - **Catalogue de permissions** : liste exhaustive dans `docs/schema-bdd.md`, section `PERMISSION`. *(tranché le 2026-09-03)*
 - **Accès enseignant à la fiche élève** : refusé par design pour la V2, seules les données pédagogiques liées à ses propres cours seront accessibles. À affiner au Sprint 8.
+
+## 2ter. Planning & séances : *Personne A*
+
+| Méthode | Endpoint | Permission requise | Description |
+|---|---|---|---|
+| GET | `/affectations/{id}/creneaux` | `gerer_enseignants` | Créneaux d'une affectation |
+| POST | `/affectations/{id}/creneaux` | `gerer_enseignants` | Créer un créneau hebdomadaire |
+| PATCH | `/creneaux/{id}` | `gerer_enseignants` | Modifier/désactiver un créneau |
+| GET | `/mon-planning` | `voir_pedagogie` | Créneaux actifs de l'enseignant connecté |
+| POST | `/seances` | `voir_pedagogie` | Déclarer une séance (tenue/annulée) sur une affectation de l'enseignant connecté |
+| GET | `/enseignants/{id}/rapport-mensuel?mois=YYYY-MM` | `gerer_enseignants` | Rapport agrégé : séances tenues/annulées, taux de présence moyen |
+
+**Exemple `POST /seances`** :
+```json
+{
+  "affectation_id": "uuid",
+  "creneau_id": "uuid",
+  "date_seance": "2026-10-06",
+  "statut": "tenue",
+  "nb_presents": 28,
+  "nb_absents": 2
+}
