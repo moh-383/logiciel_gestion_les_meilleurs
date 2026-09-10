@@ -188,7 +188,7 @@ L'app mobile stocke localement les paiements créés sans connexion. Dès que la
     { "client_uuid": "uuid-2", "statut": "conflit", "raison": "echeance_deja_soldee" }
   ]
 }
-```
+
 Un `statut: "conflit"` ne supprime pas le paiement côté serveur ni côté mobile, il reste visible pour arbitrage manuel par le responsable de site ou la direction (voir `docs/schema-bdd.md`, section sur la résolution de conflits).
 
 `note` est nullable et doit être conservée pendant la synchronisation. Pour une
@@ -213,11 +213,3 @@ requête répétée avec le même `client_uuid`, le serveur répond de nouveau a
 - **Format dates/heures** : UTC + ISO 8601 (`Z`), voir Conventions générales. *(tranché le 2026-09-03)*
 - **Catalogue de permissions** : liste exhaustive dans `docs/schema-bdd.md`, section `PERMISSION`. *(tranché le 2026-09-03)*
 - **Accès enseignant à la fiche élève** : refusé par design pour la V2, seules les données pédagogiques liées à ses propres cours seront accessibles. À affiner au Sprint 8.
-
-## 8.
-
-| Méthode | Endpoint | Permission | Description |
-|---|---|---|---|
-| PATCH | `/utilisateurs/me/fcm-token` | authentifié (soi-même) | Enregistre/rafraîchit le token FCM de l'appareil courant |
-| GET | `/notifications` | `recevoir_alertes_paiement` ou `voir_finances` | Historique des notifications du site (filtrable `?type=&statut=`) |
-
