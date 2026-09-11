@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../models/permission_catalogue.dart';
 import '../models/poste.dart';
+import '../models/site.dart';
 import '../models/utilisateur_resume.dart';
 
 class AdministrationRepository {
@@ -93,8 +94,9 @@ class AdministrationRepository {
   /// Crée un nouveau site. `adresse`, `capacite`, `responsable` sont
   /// optionnels côté backend (voir `core/serializers.py::SiteSerializer`),
   /// donc `nom` seul suffit pour le formulaire rapide actuel.
-  Future<void> creerSite({required String nom}) async {
-    await dio.post('/sites', data: {'nom': nom});
+  Future<Site> creerSite({required String nom}) async {
+    final response = await dio.post('/sites', data: {'nom': nom});
+    return Site.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 
   /// IMPORTANT : `mot_de_passe` n'est pas un champ déclaré du serializer

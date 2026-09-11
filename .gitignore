@@ -7,5 +7,12 @@ __pycache__/
 backend/.env
 backend/db.sqlite3
 
+# Firebase : fichiers de configuration d'application et clés de service
+# restent strictement locaux. Les clés Admin SDK ne doivent jamais être commitées.
+mobile/android/app/google-services.json
+mobile/ios/Runner/GoogleService-Info.plist
+firebase-service-account*.json
+service-account*.json
+
 # Environnement
 .env

@@ -24,6 +24,7 @@ class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
   late DateTime? _dateNaissance;
   late String _sexe;
   late String _typeCours;
+  late String _statut;
   bool _enregistrement = false;
 
   bool get _estEnAttente => widget.eleve.enAttenteDeSync;
@@ -39,6 +40,7 @@ class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
     _typeCours = widget.eleve.typeCours.isEmpty
         ? 'renforcement_regulier'
         : widget.eleve.typeCours;
+    _statut = widget.eleve.statut == 'inactif' ? 'inactif' : 'actif';
   }
 
   @override
@@ -100,6 +102,7 @@ class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
               'site_id': widget.eleve.siteId,
               'classe': _classeController.text.trim(),
               'type_cours': _typeCours,
+              'statut': _statut,
             },
           );
       await ref.read(importServiceProvider).importerDonneesDuSite();
@@ -202,6 +205,23 @@ class _EleveEditScreenState extends ConsumerState<EleveEditScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _statut,
+              decoration: const InputDecoration(
+                labelText: 'Statut de l’élève',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'actif', child: Text('Actif')),
+                DropdownMenuItem(
+                  value: 'inactif',
+                  child: Text('Inactif — dossier conservé'),
+                ),
+              ],
+              onChanged: (value) =>
+                  setState(() => _statut = value ?? 'actif'),
             ),
             const SizedBox(height: 12),
             Row(

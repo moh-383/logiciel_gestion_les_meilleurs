@@ -50,3 +50,10 @@ class PaiementsApiTests(APITestCase):
         self.assertEqual(paiement.statut, "annule")
         self.assertEqual(self.echeance.statut, "retard")
         self.assertEqual(DemandeValidation.objects.get().statut, "validee")
+
+    def test_rapport_financier_csv_est_protege_et_exportable(self):
+        Paiement.objects.create(client_uuid=uuid.uuid4(), echeance=self.echeance, montant=5000, mode_paiement="especes", date_paiement="2026-09-04T10:15:00Z", saisi_par=self.user)
+        response = self.client.get(f"/api/v1/sites/{self.site.id}/rapports/financier.csv")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
+        self.assertIn("Kaboré", response.content.decode("utf-8"))

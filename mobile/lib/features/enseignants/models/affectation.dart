@@ -26,3 +26,27 @@ class Affectation {
     );
   }
 }
+
+class Creneau {
+  final String id;
+  final int jourSemaine;
+  final String heureDebut;
+  final String heureFin;
+  final bool actif;
+
+  const Creneau({
+    required this.id,
+    required this.jourSemaine,
+    required this.heureDebut,
+    required this.heureFin,
+    required this.actif,
+  });
+
+  factory Creneau.fromJson(Map<String, dynamic> json) => Creneau(
+    id: json['id'] as String,
+    jourSemaine: json['jour_semaine'] as int,
+    heureDebut: json['heure_debut'] as String,
+    heureFin: json['heure_fin'] as String,
+    actif: json['actif'] as bool? ?? true,
+  );
+}

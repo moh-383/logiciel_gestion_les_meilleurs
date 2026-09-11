@@ -38,6 +38,7 @@ class Echeance(models.Model):
     montant_du = models.DecimalField(max_digits=12, decimal_places=0)
     date_echeance = models.DateField()
     statut = models.CharField(max_length=20, default="a_jour")
+    inscription_programme = models.OneToOneField("programmes.InscriptionProgramme", null=True, blank=True, on_delete=models.PROTECT, related_name="echeance_programme")
 
     class Meta:
         indexes = [models.Index(fields=("eleve", "date_echeance"))]

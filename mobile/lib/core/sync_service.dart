@@ -18,6 +18,7 @@ class ResultatSync {
   final int nbEnvoyes;
   final int nbCrees;
   final int nbConflits;
+  final bool dejaEnCours;
   final String? erreurReseau;
   final String? erreurAuthentification;
   final String? erreurMetier;
@@ -26,6 +27,7 @@ class ResultatSync {
     required this.nbEnvoyes,
     required this.nbCrees,
     required this.nbConflits,
+    this.dejaEnCours = false,
     this.erreurReseau,
     this.erreurAuthentification,
     this.erreurMetier,
@@ -54,6 +56,12 @@ class SyncService {
   /// À appeler une fois au démarrage de l'app : synchronise dès que
   /// la connexion revient, sans action de l'utilisateur.
   void demarrerEcouteConnexion() {
+    // Le cycle de vie Flutter peut appeler cette méthode depuis plusieurs
+    // widgets. Une seule souscription évite les imports et synchronisations
+    // dupliqués à chaque retour du réseau.
+    if (_connectivitySub != null) {
+      return;
+    }
     _connectivitySub = Connectivity().onConnectivityChanged.listen((
       List<ConnectivityResult> resultats,
     ) async {
@@ -70,6 +78,7 @@ class SyncService {
 
   void arreterEcoute() {
     _connectivitySub?.cancel();
+    _connectivitySub = null;
   }
 
   /// Envoie en une fois tous les paiements locaux pas encore confirmés
@@ -77,7 +86,12 @@ class SyncService {
   /// "Synchroniser maintenant" pour les tests, ou en cas de doute).
   Future<ResultatSync> synchroniser() async {
     if (_syncEnCours) {
-      return ResultatSync(nbEnvoyes: 0, nbCrees: 0, nbConflits: 0);
+      return ResultatSync(
+        nbEnvoyes: 0,
+        nbCrees: 0,
+        nbConflits: 0,
+        dejaEnCours: true,
+      );
     }
     _syncEnCours = true;
 
@@ -105,6 +119,9 @@ class SyncService {
       };
 
       final reponse = await dio.post('/sync/paiements', data: corps);
+      if (reponse.data is! Map || reponse.data['resultats'] is! List) {
+        throw const FormatException('Réponse de synchronisation invalide.');
+      }
       final resultats = (reponse.data['resultats'] as List).map(
         (r) => Map<String, dynamic>.from(r as Map),
       );
@@ -164,6 +181,14 @@ class SyncService {
         nbCrees: 0,
         nbConflits: 0,
         erreurReseau: message,
+      );
+    } on FormatException catch (e) {
+      debugPrint('Synchronisation échouée : ${e.message}');
+      return ResultatSync(
+        nbEnvoyes: 0,
+        nbCrees: 0,
+        nbConflits: 0,
+        erreurMetier: e.message,
       );
     } finally {
       _syncEnCours = false;

@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 
 from accounts.models import Utilisateur
 
-from .models import Permission, Poste
+from .models import Permission, Poste, Site
 
 
 class PosteApiTests(TestCase):
@@ -139,3 +139,29 @@ class PosteApiTests(TestCase):
             codes,
             {"saisir_paiement"},
         )
+
+
+class SiteApiTests(TestCase):
+    """Le POST site doit être immédiatement observable dans la liste API."""
+
+    def setUp(self):
+        self.client = APIClient()
+        permission = Permission.objects.create(
+            code="gerer_comptes", libelle="Gérer les comptes"
+        )
+        poste = Poste.objects.create(nom="Direction", tous_sites=True)
+        poste.permissions.add(permission)
+        self.direction = Utilisateur.objects.create_user(
+            "+22670009999", "mot-de-passe-solide", nom="Direction", poste=poste
+        )
+        self.client.force_authenticate(self.direction)
+
+    def test_site_cree_apparait_dans_la_liste(self):
+        response = self.client.post("/api/v1/sites", {"nom": "Koudougou"}, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(Site.objects.filter(nom="Koudougou").exists())
+
+        liste = self.client.get("/api/v1/sites")
+        self.assertEqual(liste.status_code, 200)
+        self.assertIn("Koudougou", [site["nom"] for site in liste.data["data"]])

@@ -124,6 +124,10 @@ class _OngletInfos extends StatelessWidget {
         _section('Scolarité', [
           _ligne('Classe', eleve.classe),
           _ligne('Type de cours', eleve.typeCours),
+          _ligne(
+            'Statut',
+            eleve.statut == 'inactif' ? 'Inactif' : 'Actif',
+          ),
         ]),
       ],
     );

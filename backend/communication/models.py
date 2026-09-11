@@ -25,5 +25,14 @@ class Echange(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        indexes = [models.Index(fields=("eleve", "-date_echange")), models.Index(fields=("site", "-date_echange"))]
+        indexes = [
+            models.Index(
+                fields=("eleve", "-date_echange"),
+                name="comm_ech_eleve_date_idx",
+            ),
+            models.Index(
+                fields=("site", "-date_echange"),
+                name="comm_ech_site_date_idx",
+            ),
+        ]
         ordering = ("-date_echange",)

@@ -25,4 +25,9 @@ class Notification(models.Model):
     date_envoi = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        indexes = [models.Index(fields=("site", "date_creation"))]
+        indexes = [
+            models.Index(
+                fields=("site", "date_creation"),
+                name="notif_site_date_idx",
+            )
+        ]

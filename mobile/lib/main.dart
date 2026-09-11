@@ -29,9 +29,6 @@ class _MyAppState extends ConsumerState<MyApp> {
     // Démarre l'écoute de connexion dès le lancement de l'app : dès que
     // le réseau revient, les paiements en attente sont envoyés au
     // serveur automatiquement, sans action de l'utilisateur.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(syncServiceProvider).demarrerEcouteConnexion();
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(syncServiceProvider).demarrerEcouteConnexion();
       await ref.read(fcmServiceProvider).initialiser();

@@ -106,6 +106,29 @@ python manage.py runserver
 Résultat attendu : `Starting development server at http://127.0.0.1:8000/`.
 Laissez ce terminal ouvert.
 
+### Connexion depuis Flutter
+
+- **Émulateur Android** : utilisez `http://10.0.2.2:8000/api/v1` ; Django
+  peut rester lancé avec `python manage.py runserver`.
+- **Téléphone Android réel** : utilisez l'adresse IPv4 du PC sur le même
+  Wi-Fi, puis rendez Django accessible au réseau local :
+
+```powershell
+$env:DJANGO_USE_SQLITE = "true"
+$env:DJANGO_ALLOWED_HOSTS = "localhost,127.0.0.1,192.168.11.105"
+python manage.py runserver 0.0.0.0:8000
+```
+
+Puis relancez Flutter (un hot reload ne relit pas `--dart-define`) :
+
+```powershell
+flutter run --dart-define=API_BASE_URL=http://192.168.11.105:8000/api/v1
+```
+
+Remplacez `192.168.11.105` par l'adresse retournée par `ipconfig` si elle
+change. Vérifiez aussi que le pare-feu Windows autorise Python sur un réseau
+privé.
+
 ## 5. Vérifier login et synchronisation offline
 
 Ouvrez un deuxième PowerShell et exécutez :

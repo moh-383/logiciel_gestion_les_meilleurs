@@ -10,6 +10,7 @@ import 'encaissement_form_screen.dart';
 import 'paiement_historique_screen.dart';
 import 'demandes_validation_screen.dart';
 import '../eleves/eleves_list_screen.dart';
+import '../enseignants/enseignants_list_screen.dart';
 
 /// Instance unique de la base locale, partagée par toute l'app.
 /// (Sera injectée plus proprement plus tard si besoin de mock pour les tests.)
@@ -70,6 +71,16 @@ class _PaiementsListScreenState extends ConsumerState<PaiementsListScreen> {
               );
             },
           ),
+          if (session?.permissions.contains('gerer_enseignants') == true)
+            IconButton(
+              icon: const Icon(Icons.school_outlined),
+              tooltip: 'Enseignants',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const EnseignantsListScreen()),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.pending_actions),
             tooltip: 'Demandes de validation',
@@ -255,12 +266,16 @@ class _BandeauHorsLigne extends ConsumerWidget {
                       .read(syncServiceProvider)
                       .synchroniser();
                   if (context.mounted) {
-                    final message = resultat.erreurAuthentification != null
+                    final message = resultat.dejaEnCours
+                        ? 'Synchronisation déjà en cours.'
+                        : resultat.erreurAuthentification != null
                         ? 'Session expirée : reconnecte-toi pour synchroniser.'
                         : resultat.erreurMetier != null
                         ? 'Synchronisation refusée : ${resultat.erreurMetier}'
                         : resultat.erreurReseau != null
                         ? 'Synchronisation impossible pour le moment (pas de connexion au serveur)'
+                        : resultat.nbEnvoyes == 0
+                        ? 'Aucun paiement en attente de synchronisation.'
                         : '${resultat.nbCrees} synchronisé(s), ${resultat.nbConflits} conflit(s)';
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(message)));

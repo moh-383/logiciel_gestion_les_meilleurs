@@ -105,6 +105,7 @@ contrôlée par le serveur.
 | GET | `/eleves/{id}/paiements` | - (périmètre) | Historique des paiements d'un élève |
 | GET | `/sites/{id}/paiements` | `voir_finances` | Liste des paiements/retards du site, filtrable `?statut=retard\|partiel\|a_jour` |
 | GET | `/sites/{id}/stats/paiements` | `voir_finances` | Statistiques agrégées (collecté, taux de recouvrement, nb retards) |
+| GET | `/sites/{id}/rapports/financier.csv` | `voir_finances` | Export CSV des paiements du site, compatible Excel |
 | POST | `/paiements` | `saisir_paiement` | Enregistrer un paiement sur une échéance |
 | POST | `/paiements/{id}/demande-annulation` | `saisir_paiement` | Soumet une demande d'annulation (crée une `DEMANDE_VALIDATION`) |
 | POST | `/sync/paiements` | `saisir_paiement` | Synchronisation en lot des paiements créés hors-ligne (voir §6) |

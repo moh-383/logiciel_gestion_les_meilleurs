@@ -446,3 +446,42 @@ class EleveResumeFinancierApiTests(APITestCase):
             "resume_financier",
             response.data["data"][0],
         )
+
+
+class StatutEleveApiTests(APITestCase):
+    """La désactivation est logique : les données financières survivent."""
+
+    def setUp(self):
+        self.site = Site.objects.create(nom="Kaya")
+        poste = Poste.objects.create(nom="Gestion élèves")
+        poste.permissions.add(
+            Permission.objects.create(code="gerer_eleves", libelle="Gérer élèves")
+        )
+        self.user = Utilisateur.objects.create_user(
+            "+22670007777", "mot-de-passe-solide", nom="Awa", poste=poste, site=self.site
+        )
+        self.eleve = Eleve.objects.create(
+            matricule="ELV-STATUT-001", nom="Traoré", prenom="Aminata",
+            sexe="F", site=self.site, classe="4ème", type_cours="regulier",
+        )
+        self.echeance = Echeance.objects.create(
+            eleve=self.eleve, montant_du=Decimal(15000), date_echeance="2026-09-30"
+        )
+        self.client.force_authenticate(self.user)
+
+    def test_desactivation_conserve_echeances_et_paiements(self):
+        response = self.client.patch(
+            f"/api/v1/eleves/{self.eleve.id}", {"statut": "inactif"}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.eleve.refresh_from_db()
+        self.assertEqual(self.eleve.statut, "inactif")
+        self.assertTrue(Echeance.objects.filter(pk=self.echeance.pk).exists())
+
+    def test_statut_invalide_est_refuse(self):
+        response = self.client.patch(
+            f"/api/v1/eleves/{self.eleve.id}", {"statut": "supprime"}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 400)

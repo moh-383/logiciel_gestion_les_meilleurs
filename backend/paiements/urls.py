@@ -8,6 +8,7 @@ from .views import (
                     PaiementsEleveView,
                     PaiementsSiteView,
                     PaiementsSyncView,
+                    RapportFinancierSiteCsvView,
                     StatsPaiementsSiteView,
 )
 
@@ -18,6 +19,7 @@ urlpatterns = [
     path("eleves/<uuid:pk>/paiements", PaiementsEleveView.as_view()),
     path("sites/<uuid:pk>/paiements", PaiementsSiteView.as_view()),
     path("sites/<uuid:pk>/stats/paiements", StatsPaiementsSiteView.as_view()),
+    path("sites/<uuid:pk>/rapports/financier.csv", RapportFinancierSiteCsvView.as_view()),
     path("demandes-validation", DemandesValidationView.as_view()),
     path("demandes-validation/<uuid:pk>", DemandeValidationDetailView.as_view()),
 ]

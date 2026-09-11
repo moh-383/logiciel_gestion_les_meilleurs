@@ -1,5 +1,8 @@
+import csv
+
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Sum
+from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -98,6 +101,38 @@ class StatsPaiementsSiteView(APIView):
         statuts = site.eleves.values("echeances__statut").annotate(total=Count("echeances"))
         compteurs = {item["echeances__statut"]: item["total"] for item in statuts}
         return Response({"effectif": site.eleves.count(), "montant_collecte": montant_collecte, "montant_attendu": montant_attendu, "taux_recouvrement": float(montant_collecte / montant_attendu) if montant_attendu else 0, "nb_en_retard": compteurs.get("retard", 0), "nb_partiel": compteurs.get("partiel", 0)})
+
+
+class RapportFinancierSiteCsvView(APIView):
+    """Export CSV des paiements du site, réservé aux postes Finances."""
+
+    permission_classes = (ALaPermissionMetier,)
+    permission_metier = "voir_finances"
+
+    def get(self, request, pk):
+        site = Site.objects.get(pk=pk)
+        if not _site_accessible(request.user, site.id):
+            raise PermissionDenied("Site hors de votre périmètre.")
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="rapport-financier-{site.id}.csv"'
+        response.write("\ufeff")  # Excel détecte correctement l'UTF-8 et les accents.
+        writer = csv.writer(response, delimiter=";")
+        writer.writerow(("Élève", "Matricule", "Échéance", "Montant payé", "Mode", "Date", "Statut"))
+        paiements = Paiement.objects.filter(echeance__eleve__site=site).select_related(
+            "echeance__eleve"
+        ).order_by("-date_paiement")
+        for paiement in paiements:
+            eleve = paiement.echeance.eleve
+            writer.writerow((
+                f"{eleve.prenom} {eleve.nom}",
+                eleve.matricule,
+                paiement.echeance_id,
+                paiement.montant,
+                paiement.mode_paiement,
+                paiement.date_paiement.isoformat(),
+                paiement.statut,
+            ))
+        return response
 
 
 class DemandeAnnulationView(APIView):

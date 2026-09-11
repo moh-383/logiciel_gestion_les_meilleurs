@@ -8,6 +8,7 @@ import 'models/utilisateur_resume.dart';
 import 'providers/administration_providers.dart';
 import 'screens/utilisateur_creation_screen.dart';
 import 'screens/utilisateur_modification_screen.dart';
+import 'screens/poste_permissions_screen.dart';
 
 class AdministrationScreen extends ConsumerStatefulWidget {
   const AdministrationScreen({super.key});
@@ -88,6 +89,10 @@ class _AdministrationScreenState
           );
 
       ref.invalidate(sitesProvider);
+      // Le succès n'est annoncé qu'après la lecture de la liste qui contient
+      // désormais le site créé. Si cette étape échoue, l'utilisateur ne reçoit
+      // pas un faux positif alors que l'état de l'écran est incohérent.
+      await ref.read(sitesProvider.future);
 
       if (mounted) {
         _afficherMessage('Site créé avec succès.');
@@ -188,6 +193,19 @@ class _AdministrationScreenState
     ref.invalidate(utilisateursProvider);
   }
 
+  Future<void> _ouvrirPermissionsPoste(Poste poste) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PostePermissionsScreen(
+          posteId: poste.id,
+          posteNom: poste.nom,
+        ),
+      ),
+    );
+    ref.invalidate(postesProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
     final sites = ref.watch(sitesProvider);
@@ -235,18 +253,13 @@ class _AdministrationScreenState
                 : 'Accès limité au site',
             icone: Icons.badge,
             onRefresh: _actualiser,
+            onTap: _ouvrirPermissionsPoste,
           ),
 
           // ============================================================
           // PERMISSIONS
           // ============================================================
-          _ConstruireListe<PermissionCatalogue>(
-            asyncValue: permissions,
-            titre: (permission) => permission.libelle,
-            sousTitre: (permission) => permission.code,
-            icone: Icons.lock,
-            onRefresh: _actualiser,
-          ),
+          _CataloguePermissions(asyncValue: permissions, onRefresh: _actualiser),
 
           // ============================================================
           // UTILISATEURS
@@ -369,6 +382,41 @@ class _AdministrationScreenState
   }
 }
 
+class _CataloguePermissions extends StatelessWidget {
+  final AsyncValue<List<PermissionCatalogue>> asyncValue;
+  final Future<void> Function() onRefresh;
+
+  const _CataloguePermissions({required this.asyncValue, required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return asyncValue.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => Center(child: Text('Erreur : $error')),
+      data: (permissions) => RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(14),
+                child: Text('Ce catalogue décrit les droits disponibles. Pour les attribuer, ouvrez un poste dans l’onglet Postes.'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...permissions.map((permission) => ListTile(
+              leading: const Icon(Icons.lock_outline),
+              title: Text(permission.libelle),
+              subtitle: Text(permission.code),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ============================================================================
 // WIDGET GÉNÉRIQUE POUR AFFICHER UNE LISTE
 // ============================================================================
@@ -379,6 +427,7 @@ class _ConstruireListe<T> extends StatelessWidget {
   final String Function(T item) sousTitre;
   final IconData icone;
   final Future<void> Function() onRefresh;
+  final void Function(T item)? onTap;
 
   const _ConstruireListe({
     required this.asyncValue,
@@ -386,6 +435,7 @@ class _ConstruireListe<T> extends StatelessWidget {
     required this.sousTitre,
     required this.icone,
     required this.onRefresh,
+    this.onTap,
   });
 
   @override
@@ -455,6 +505,8 @@ class _ConstruireListe<T> extends StatelessWidget {
                 subtitle: Text(
                   sousTitre(item),
                 ),
+                trailing: onTap == null ? null : const Icon(Icons.chevron_right),
+                onTap: onTap == null ? null : () => onTap!(item),
               );
             },
           ),

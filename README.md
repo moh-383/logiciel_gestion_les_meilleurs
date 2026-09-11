@@ -2,8 +2,9 @@
 
 Logiciel de gestion pour la structure de cours d'appui scolaire (collège et lycée) "Cours d'appui les meilleurs". Il est  multi-sites, remplaçe le suivi manuel actuel (groupes WhatsApp, cahiers, appels) par un système centralisé : élèves, paiements, rôles, communication et résultats aux examens.
 
-📄 Cahier des charges complet : `docs/cahier_des_charges.pdf`
-🎨 Maquettes des écrans MVP : `docs/maquettes.html`
+📄 Cahier des charges complet : `docs/cahier_des_charges_logiciel_gestion_scolaire.pdf`
+🎨 Maquettes des écrans MVP : `docs/maquettes_logiciel_gestion_scolaire.html`
+🧪 Guide de recette complet : [`docs/GUIDE_RECETTE_COMPLETE.md`](docs/GUIDE_RECETTE_COMPLETE.md)
 
 ---
 

@@ -11,7 +11,7 @@ ALLOWED_HOSTS = [host for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localh
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
     "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
-    "corsheaders", "rest_framework", "rest_framework_simplejwt.token_blacklist", "core", "accounts", "eleves", "paiements", "notifications", "communication"
+    "corsheaders", "rest_framework", "rest_framework_simplejwt.token_blacklist", "core", "accounts", "eleves", "paiements", "notifications", "communication", "enseignants", "programmes"
 ]
 
 FIREBASE_CREDENTIALS_PATH = os.environ.get("FIREBASE_CREDENTIALS_PATH", "")
@@ -46,13 +46,6 @@ else:
             "PORT": os.environ.get("POSTGRES_PORT", "5432"),
         }
     }
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
 AUTH_USER_MODEL = "accounts.Utilisateur"
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

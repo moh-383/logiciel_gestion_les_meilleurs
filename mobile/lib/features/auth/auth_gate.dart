@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth_service.dart';
-import '../paiements/paiements_list_screen.dart';
+import '../home/home_screen.dart';
 import 'login_screen.dart';
 
 class AuthGate extends ConsumerWidget {
@@ -14,7 +14,7 @@ class AuthGate extends ConsumerWidget {
     return session.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, _) => const LoginScreen(),
-      data: (user) => user == null ? const LoginScreen() : const PaiementsListScreen(),
+      data: (user) => user == null ? const LoginScreen() : HomeScreen(session: user),
     );
   }
 }

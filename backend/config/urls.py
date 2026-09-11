@@ -10,4 +10,6 @@ urlpatterns = [
     path("api/v1/", include("paiements.urls")),
     path("api/v1/", include("notifications.urls")),
     path("api/v1/", include("communication.urls")),
+    path("api/v1/", include("enseignants.urls")),
+    path("api/v1/", include("programmes.urls")),
 ]

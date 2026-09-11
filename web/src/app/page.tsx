@@ -1,9 +1,13 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
-const API_BASE_URL =
+const configuredApiUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
+// Tolère une URL collée accidentellement au format Markdown dans PowerShell.
+const API_BASE_URL = configuredApiUrl
+  .replace(/^\[([^\]]+)\]\([^)]*\)$/, "$1")
+  .replace(/\/$/, "");
 
 type Site = { id: string; nom: string; adresse?: string };
 type Stats = {
@@ -20,8 +24,20 @@ function formatFcfa(value: number) {
 }
 
 export default function Home() {
-  const [token, setToken] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : window.localStorage.getItem("access_token"),
+  // localStorage est uniquement disponible après l'hydratation. Le lire dans
+  // l'initialiseur de state créait deux arbres HTML différents (login côté
+  // serveur, dashboard côté navigateur).
+  const token = useSyncExternalStore(
+    (notifier) => {
+      window.addEventListener("storage", notifier);
+      window.addEventListener("session-changed", notifier);
+      return () => {
+        window.removeEventListener("storage", notifier);
+        window.removeEventListener("session-changed", notifier);
+      };
+    },
+    () => window.localStorage.getItem("access_token"),
+    () => null,
   );
   const [telephone, setTelephone] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
@@ -35,9 +51,14 @@ export default function Home() {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.message ?? "La requête a échoué.");
+      if (response.status === 401) {
+        window.localStorage.removeItem("access_token");
+        window.dispatchEvent(new Event("session-changed"));
+        throw new Error("Votre session a expiré. Connectez-vous de nouveau.");
+      }
+      throw new Error(data.message ?? data.detail ?? "La requête a échoué.");
     }
     return data as T;
   }
@@ -83,7 +104,7 @@ export default function Home() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message ?? "Connexion impossible.");
       window.localStorage.setItem("access_token", data.access_token);
-      setToken(data.access_token);
+      window.dispatchEvent(new Event("session-changed"));
     } catch (error) {
       setErreur(error instanceof Error ? error.message : "Connexion impossible.");
       setChargement(false);
@@ -92,9 +113,32 @@ export default function Home() {
 
   function deconnecter() {
     window.localStorage.removeItem("access_token");
-    setToken(null);
+    window.dispatchEvent(new Event("session-changed"));
     setSites([]);
     setStats({});
+  }
+
+  async function exporterRapport(site: Site) {
+    if (!token) return;
+    setErreur("");
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/sites/${site.id}/rapports/financier.csv`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message ?? "Export impossible.");
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `rapport-financier-${site.nom}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      setErreur(error instanceof Error ? error.message : "Export impossible.");
+    }
   }
 
   if (!token) {
@@ -144,7 +188,7 @@ export default function Home() {
             <article className="metric-card"><span>Recouvrement global</span><strong>{Math.round(tauxGlobal * 100)}%</strong><small>objectif de suivi financier</small></article>
           </section>
           <section className="section-heading"><div><p className="eyebrow">Comparatif</p><h2>Performance des sites</h2></div><button className="button-quiet" onClick={() => token && chargerDashboard(token)}>Actualiser</button></section>
-          <section className="site-table" aria-label="Performance des sites"><div className="table-head"><span>Site</span><span>Élèves</span><span>Collecté</span><span>Recouvrement</span><span>Alertes</span></div>{sitesVisibles.map((site) => { const item = stats[site.id]; if (!item) return null; return <div className="table-row" key={site.id}><strong>{site.nom}</strong><span>{item.effectif}</span><span>{formatFcfa(Number(item.montant_collecte))}</span><span><i className="progress"><b style={{ width: `${Math.min(item.taux_recouvrement * 100, 100)}%` }} /></i>{Math.round(item.taux_recouvrement * 100)}%</span><span className="alerts">{item.nb_en_retard + item.nb_partiel}</span></div>; })}</section>
+          <section className="site-table" aria-label="Performance des sites"><div className="table-head"><span>Site</span><span>Élèves</span><span>Collecté</span><span>Recouvrement</span><span>Alertes</span><span>Rapport</span></div>{sitesVisibles.map((site) => { const item = stats[site.id]; if (!item) return null; return <div className="table-row" key={site.id}><strong>{site.nom}</strong><span>{item.effectif}</span><span>{formatFcfa(Number(item.montant_collecte))}</span><span><i className="progress"><b style={{ width: `${Math.min(item.taux_recouvrement * 100, 100)}%` }} /></i>{Math.round(item.taux_recouvrement * 100)}%</span><span className="alerts">{item.nb_en_retard + item.nb_partiel}</span><span><button className="button-quiet" onClick={() => exporterRapport(site)}>CSV</button></span></div>; })}</section>
         </>}
       </section>
     </main>

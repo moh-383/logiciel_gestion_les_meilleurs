@@ -18,6 +18,9 @@ class ContactParentSerializer(serializers.ModelSerializer):
 
 class EleveSerializer(serializers.ModelSerializer):
     contacts = ContactParentSerializer(many=True, required=False)
+    statut = serializers.ChoiceField(
+        choices=("actif", "inactif"), required=False
+    )
 
     site_id = serializers.PrimaryKeyRelatedField(
         source="site",

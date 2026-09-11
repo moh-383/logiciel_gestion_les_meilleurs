@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- L'API de développement Django est servie en HTTP sur le réseau local.
+         Cette exception ne s'applique qu'aux builds debug, jamais à la release. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
