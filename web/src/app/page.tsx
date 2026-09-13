@@ -18,6 +18,13 @@ type Stats = {
   nb_en_retard: number;
   nb_partiel: number;
 };
+type Paiement = {
+  id: string;
+  montant: number;
+  mode_paiement: string;
+  date_paiement: string;
+  statut: string;
+};
 
 function formatFcfa(value: number) {
   return `${new Intl.NumberFormat("fr-FR").format(value)} F`;
@@ -44,6 +51,8 @@ export default function Home() {
   const [sites, setSites] = useState<Site[]>([]);
   const [stats, setStats] = useState<Record<string, Stats>>({});
   const [siteSelectionne, setSiteSelectionne] = useState<string>("tous");
+  const [paiementsRecents, setPaiementsRecents] = useState<Paiement[]>([]);
+  const [chargementDetail, setChargementDetail] = useState(false);
   const [chargement, setChargement] = useState(false);
   const [erreur, setErreur] = useState("");
 
@@ -90,6 +99,29 @@ export default function Home() {
   useEffect(() => {
     if (token) queueMicrotask(() => void chargerDashboard(token));
   }, [chargerDashboard, token]);
+
+  const chargerDetailSite = useCallback(async (siteId: string, accessToken: string) => {
+    if (siteId === "tous") {
+      setPaiementsRecents([]);
+      return;
+    }
+    setChargementDetail(true);
+    try {
+      const payload = await requete<{ data?: Paiement[] } | Paiement[]>(
+        `/sites/${siteId}/paiements?limit=5`,
+        accessToken,
+      );
+      setPaiementsRecents(Array.isArray(payload) ? payload : payload.data ?? []);
+    } catch (error) {
+      setErreur(error instanceof Error ? error.message : "Impossible de charger le détail du site.");
+    } finally {
+      setChargementDetail(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (token) queueMicrotask(() => void chargerDetailSite(siteSelectionne, token));
+  }, [chargerDetailSite, siteSelectionne, token]);
 
   async function connecter(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -168,6 +200,8 @@ export default function Home() {
   const totalCollecte = statsVisibles.reduce((sum, item) => sum + Number(item.montant_collecte), 0);
   const totalAttendu = statsVisibles.reduce((sum, item) => sum + Number(item.montant_attendu), 0);
   const tauxGlobal = totalAttendu ? totalCollecte / totalAttendu : 0;
+  const siteDetail = siteSelectionne === "tous" ? undefined : sites.find((site) => site.id === siteSelectionne);
+  const statistiquesDetail = siteDetail ? stats[siteDetail.id] : undefined;
 
   return (
     <main className="dashboard-shell">
@@ -187,8 +221,13 @@ export default function Home() {
             <article className="metric-card"><span>Montant collecté</span><strong>{formatFcfa(totalCollecte)}</strong><small>sur {formatFcfa(totalAttendu)} attendus</small></article>
             <article className="metric-card"><span>Recouvrement global</span><strong>{Math.round(tauxGlobal * 100)}%</strong><small>objectif de suivi financier</small></article>
           </section>
+          {siteDetail && statistiquesDetail && <section className="site-detail" aria-label={`Détail ${siteDetail.nom}`}>
+            <div className="detail-heading"><div><p className="eyebrow">Fiche site</p><h2>{siteDetail.nom}</h2><p className="muted">Suivi financier et dernières opérations enregistrées.</p></div><button className="button-quiet" onClick={() => exporterRapport(siteDetail)}>Télécharger le CSV</button></div>
+            <div className="detail-grid"><article><span>Montant restant</span><strong>{formatFcfa(Number(statistiquesDetail.montant_attendu) - Number(statistiquesDetail.montant_collecte))}</strong></article><article><span>Échéances à suivre</span><strong>{statistiquesDetail.nb_en_retard + statistiquesDetail.nb_partiel}</strong><small>{statistiquesDetail.nb_en_retard} en retard · {statistiquesDetail.nb_partiel} partielles</small></article><article><span>Recouvrement</span><strong>{Math.round(statistiquesDetail.taux_recouvrement * 100)}%</strong><i className="detail-progress"><b style={{ width: `${Math.min(statistiquesDetail.taux_recouvrement * 100, 100)}%` }} /></i></article></div>
+            <div className="recent-payments"><h3>Paiements récents</h3>{chargementDetail ? <p className="muted">Chargement…</p> : paiementsRecents.length === 0 ? <p className="muted">Aucun paiement enregistré pour ce site.</p> : <ul>{paiementsRecents.map((paiement) => <li key={paiement.id}><span>{formatFcfa(Number(paiement.montant))}</span><small>{paiement.mode_paiement.replaceAll("_", " ")} · {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(new Date(paiement.date_paiement))}</small><b className={paiement.statut === "valide" ? "status-valid" : "status-muted"}>{paiement.statut}</b></li>)}</ul>}</div>
+          </section>}
           <section className="section-heading"><div><p className="eyebrow">Comparatif</p><h2>Performance des sites</h2></div><button className="button-quiet" onClick={() => token && chargerDashboard(token)}>Actualiser</button></section>
-          <section className="site-table" aria-label="Performance des sites"><div className="table-head"><span>Site</span><span>Élèves</span><span>Collecté</span><span>Recouvrement</span><span>Alertes</span><span>Rapport</span></div>{sitesVisibles.map((site) => { const item = stats[site.id]; if (!item) return null; return <div className="table-row" key={site.id}><strong>{site.nom}</strong><span>{item.effectif}</span><span>{formatFcfa(Number(item.montant_collecte))}</span><span><i className="progress"><b style={{ width: `${Math.min(item.taux_recouvrement * 100, 100)}%` }} /></i>{Math.round(item.taux_recouvrement * 100)}%</span><span className="alerts">{item.nb_en_retard + item.nb_partiel}</span><span><button className="button-quiet" onClick={() => exporterRapport(site)}>CSV</button></span></div>; })}</section>
+          <section className="site-table" aria-label="Performance des sites"><div className="table-head"><span>Site</span><span>Élèves</span><span>Collecté</span><span>Recouvrement</span><span>Alertes</span><span>Rapport</span></div>{sitesVisibles.map((site) => { const item = stats[site.id]; if (!item) return null; return <div className="table-row" key={site.id}><strong><button className="site-link" onClick={() => setSiteSelectionne(site.id)}>{site.nom}</button></strong><span>{item.effectif}</span><span>{formatFcfa(Number(item.montant_collecte))}</span><span><i className="progress"><b style={{ width: `${Math.min(item.taux_recouvrement * 100, 100)}%` }} /></i>{Math.round(item.taux_recouvrement * 100)}%</span><span className="alerts">{item.nb_en_retard + item.nb_partiel}</span><span><button className="button-quiet" onClick={() => exporterRapport(site)}>CSV</button></span></div>; })}</section>
         </>}
       </section>
     </main>

@@ -1,7 +1,15 @@
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 
+
+def healthcheck(request):
+    """Sonde publique pour l'hébergeur ; ne révèle aucune donnée métier."""
+    return JsonResponse({"status": "ok"})
+
+
 urlpatterns = [
+    path("api/v1/health", healthcheck),
     path("admin/", admin.site.urls),
     path("api/v1/auth/", include("accounts.auth_urls")),
     path("api/v1/", include("accounts.urls")),

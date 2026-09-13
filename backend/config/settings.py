@@ -15,6 +15,9 @@ INSTALLED_APPS = [
 ]
 
 FIREBASE_CREDENTIALS_PATH = os.environ.get("FIREBASE_CREDENTIALS_PATH", "")
+# Pour les hébergeurs (Railway, Render…), la clé Admin SDK est fournie comme
+# secret Base64 plutôt que comme fichier présent dans l'image de déploiement.
+FIREBASE_CREDENTIALS_JSON_BASE64 = os.environ.get("FIREBASE_CREDENTIALS_JSON_BASE64", "")
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware", "corsheaders.middleware.CorsMiddleware", "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware", "django.middleware.csrf.CsrfViewMiddleware",
