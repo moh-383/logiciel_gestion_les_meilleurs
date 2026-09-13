@@ -35,6 +35,25 @@ input:focus, select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px #08
 .metric-card span, .metric-card small { font-size: 13px; color: var(--muted); }
 .metric-card.accent span, .metric-card.accent small { color: #d6f2e8; }
 .metric-card strong { font-family: 'Space Grotesk'; font-size: 36px; }
+.site-detail { margin: -34px 0 68px; background: #e8f3ee; border: 1px solid #cfe0d8; padding: 28px; }
+.detail-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.detail-heading h2 { font-size: 25px; }
+.detail-heading .muted { margin: 6px 0 0; }
+.detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
+.detail-grid article { min-height: 122px; background: var(--paper); padding: 18px; display: flex; flex-direction: column; gap: 7px; border: 1px solid var(--line); }
+.detail-grid span, .detail-grid small { color: var(--muted); font-size: 13px; }
+.detail-grid strong { font-family: 'Space Grotesk'; font-size: 25px; }
+.detail-progress { height: 7px; width: 100%; background: #e5eeea; margin-top: auto; }
+.detail-progress b { display: block; height: 100%; background: var(--teal); }
+.recent-payments { background: var(--paper); border: 1px solid var(--line); padding: 18px; }
+.recent-payments h3 { margin: 0 0 10px; font-family: 'Space Grotesk'; }
+.recent-payments ul { margin: 0; padding: 0; list-style: none; }
+.recent-payments li { display: grid; grid-template-columns: 1fr 2fr auto; gap: 12px; padding: 12px 0; align-items: center; border-top: 1px solid var(--line); }
+.recent-payments li span { font-weight: 700; }
+.recent-payments li small { color: var(--muted); text-transform: capitalize; }
+.status-valid, .status-muted { font-size: 11px; text-transform: uppercase; letter-spacing: .7px; }
+.status-valid { color: var(--teal); }.status-muted { color: var(--muted); }
+.site-link { background: none; border: 0; color: inherit; font: inherit; font-weight: inherit; padding: 0; text-align: left; }.site-link:hover { color: var(--teal); text-decoration: underline; }
 .section-heading { align-items: center; }
 .button-quiet { border: 1px solid var(--line); background: transparent; color: var(--ink); padding: 10px 14px; font-weight: 600; }
 .button-quiet:hover { border-color: var(--teal); color: var(--teal); }
@@ -49,4 +68,4 @@ input:focus, select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px #08
 .progress { display: inline-block; vertical-align: middle; width: 70px; height: 6px; background: #e5eeea; margin-right: 10px; }
 .progress b { display: block; height: 100%; background: var(--teal); }
 .loading { color: var(--muted); padding: 60px 0; text-align: center; }
-@media (max-width: 760px) { .login-panel { padding: 32px 24px; } .topbar { align-items: flex-start; gap: 18px; flex-direction: column; } .dashboard-content { padding-top: 32px; } .toolbar, .section-heading { align-items: flex-start; flex-direction: column; } .toolbar select { width: 100%; } .metric-grid { grid-template-columns: 1fr; margin-bottom: 44px; } .site-table { overflow-x: auto; } .table-head, .table-row { min-width: 700px; } }
+@media (max-width: 760px) { .login-panel { padding: 32px 24px; } .topbar { align-items: flex-start; gap: 18px; flex-direction: column; } .dashboard-content { padding-top: 32px; } .toolbar, .section-heading, .detail-heading { align-items: flex-start; flex-direction: column; } .toolbar select { width: 100%; } .metric-grid, .detail-grid { grid-template-columns: 1fr; margin-bottom: 44px; } .site-detail { margin-top: -20px; padding: 18px; } .recent-payments li { grid-template-columns: 1fr; gap: 3px; } .site-table { overflow-x: auto; } .table-head, .table-row { min-width: 700px; } }
