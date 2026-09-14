@@ -2,6 +2,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import parse_qsl, unquote, urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-development-key-change-me")
@@ -36,6 +37,24 @@ if os.environ.get("DJANGO_USE_SQLITE", "false").lower() == "true":
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+elif os.environ.get("DATABASE_URL"):
+    # Compatible avec les URLs PostgreSQL managées (Neon, Railway, etc.).
+    # Les options telles que ``sslmode=require`` sont conservées afin que la
+    # connexion reste chiffrée hors de l'environnement local.
+    database_url = urlparse(os.environ["DATABASE_URL"])
+    if database_url.scheme not in {"postgres", "postgresql"}:
+        raise ValueError("DATABASE_URL doit utiliser le protocole PostgreSQL.")
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": database_url.path.lstrip("/"),
+            "USER": unquote(database_url.username or ""),
+            "PASSWORD": unquote(database_url.password or ""),
+            "HOST": database_url.hostname or "localhost",
+            "PORT": str(database_url.port or 5432),
+            "OPTIONS": dict(parse_qsl(database_url.query)),
         }
     }
 else:
