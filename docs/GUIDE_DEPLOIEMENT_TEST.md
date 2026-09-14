@@ -1,4 +1,4 @@
-# Déploiement de test — Railway, Vercel et Firebase
+# Déploiement de test : Railway, Vercel et Firebase
 
 Ce guide publie un environnement de **test** distinct de la base locale. Ne
 réutilisez jamais les mots de passe ou données réelles de l'école pour une
@@ -19,7 +19,7 @@ Commitez et poussez les changements voulus sur une branche dédiée, par exemple
 `codex/deploiement-test`. Aucun secret, fichier Firebase Admin SDK ou `.env`
 ne doit être ajouté au commit.
 
-## 2. Railway — API Django et PostgreSQL
+## 2. Railway : API Django et PostgreSQL
 
 1. Créez un compte Railway avec GitHub puis créez un projet depuis le dépôt.
 2. Pour le service issu du dépôt, définissez **Root Directory** sur `backend`.
