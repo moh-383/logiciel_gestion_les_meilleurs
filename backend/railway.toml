@@ -2,8 +2,11 @@
 builder = "RAILPACK"
 
 [deploy]
-preDeployCommand = ["python manage.py migrate --noinput"]
-startCommand = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+# Les migrations restent idempotentes et sont exécutées au démarrage : une
+# modification de variable Railway peut redémarrer le conteneur sans relancer
+# l'étape pre-deploy. Avec une seule réplique, cela initialise Neon de façon
+# fiable avant de servir l'API.
+startCommand = "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
 healthcheckPath = "/api/v1/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
